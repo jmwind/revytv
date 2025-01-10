@@ -166,6 +166,23 @@
                 background-size: 100% 4px;
             }
         }
+
+        /* Add this media query for mobile devices */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;  /* Single column on mobile */
+                grid-template-rows: auto repeat(1, 300px);  /* Fixed height for webcam containers */
+                height: auto;  /* Allow dashboard to expand vertically */
+            }
+            
+            .snow-report {
+                grid-column: 1;  /* Reset grid column on mobile */
+            }
+            
+            .webcam-container {
+                min-height: 300px;  /* Ensure minimum height on mobile */
+            }
+        }
     </style>
 </head>
 <body>

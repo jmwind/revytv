@@ -18,17 +18,17 @@
         }
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: auto 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-rows: auto;
             gap: 20px;
-            height: 95vh;
+            min-height: 95vh;
         }
         .webcam-container {            
             position: relative;
             background-color: #000;
             border-radius: 0;
             overflow: hidden;
-            height: 100%;
+            aspect-ratio: 16/9;
             border: 4px solid #3a9188;
             box-shadow: 0 0 10px #3a9188, inset 0 0 10px #3a9188;
         }
@@ -68,7 +68,7 @@
         }
         .snow-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
             text-align: center;
         }
@@ -166,6 +166,33 @@
                 background-size: 100% 4px;
             }
         }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .webcam-container {
+                max-width: 100%;
+            }
+
+            .snow-stats {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+
+            .webcam-title {
+                font-size: 0.8em;
+            }
+
+            .forecast-item {
+                font-size: 0.7em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -226,8 +253,7 @@
                 const url2 = 'https://www.revelstokemountainresort.com/snow-weather-json/';
                 const proxyUrl2 = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url2);
                 const response2 = await fetch(proxyUrl2);
-                const data2 = await response2.json();
-                console.log(data2);
+                const data2 = await response2.json();                
                 
                 // Extract existing snow data
                 const newSnow = doc.querySelector('.snow-report__new .snow-report__data .value')?.textContent.trim() || '0';
@@ -246,7 +272,7 @@
                 // Extract forecast data (you'll need to adjust these selectors based on the actual HTML structure)
                 const forecast = [];
                 const forecastElements = doc.querySelectorAll('#alpine > div > section > div')[0].children;
-                console.log(forecastElements);
+                
                 for (let i = 0; i < forecastElements.length; i++) {
                     const day = forecastElements[i];
                     const snow = day.querySelector('div.weather-forecast__description > ul > li:nth-child(1)')?.textContent.trim() || '0';
@@ -255,8 +281,7 @@
                         date: date,
                         snow: snow.includes('Snow') ? snow.split('  ')[1] : '0'
                     });
-                }
-                console.log(forecast);
+                }                
                 
                 const data = {
                     newSnow,

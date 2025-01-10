@@ -39,7 +39,7 @@
             background-color: #000;
             padding: 5px 10px;
             border: 2px solid #3a9188;
-            text-shadow: 0 0 5px #3a9188;
+            text-shadow: 0 0 2px #3a9188;
             z-index: 1;
         }
         .webcam-feed {
@@ -92,7 +92,7 @@
             font-size: 1.5em;
             font-weight: bold;
             color: #fff;
-            text-shadow: 0 0 5px #3a9188;
+            text-shadow: 0 0 2px #3a9188;
         }
         .unit {
             font-size: 0.5em;
@@ -118,7 +118,7 @@
         .forecast-ticker {
             padding: 10px 0;
             margin-top: 20px;
-            border-top: 2px solid #3a9188;
+            
         }
 
         .forecast-ticker-content {
@@ -130,7 +130,7 @@
 
         .forecast-item {
             color: #3a9188;
-            text-shadow: 0 0 5px #3a9188;
+            text-shadow: 0 0 2px #3a9188;
             font-size: 0.8em;
         }
 
@@ -240,6 +240,8 @@
                 const baseTemp = data2.weather.temperature;
                 const ripperTemp = data2.summit.temperature;
                 const subpeakTemp = data2.subpeak.temperature;
+                const wind = data2.summit.wind;
+                const windDirection = data2.summit.direction;
 
                 // Extract forecast data (you'll need to adjust these selectors based on the actual HTML structure)
                 const forecast = [];
@@ -262,6 +264,8 @@
                     last24Hours,
                     last48Hours,
                     last7Days,
+                    wind,
+                    windDirection,
                     temperatures: {
                         base: baseTemp,
                         ripper: ripperTemp,
@@ -322,6 +326,10 @@
                     <div class="temp-stat">
                         <h3>Subpeak Temp</h3>
                         <div class="snow-value">${data.temperatures.subpeak}<span class="unit">°C</span></div>
+                    </div>
+                    <div class="temp-stat">
+                        <h3>Wind</h3>
+                        <div class="snow-value">${data.wind}<span class="unit">km/h ${data.windDirection}</span></div>
                     </div>
                 </div>
                 <div class="forecast-ticker">

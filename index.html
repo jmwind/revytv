@@ -183,6 +183,23 @@
                 min-height: 300px;  /* Ensure minimum height on mobile */
             }
         }
+
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #3a9188;
+            text-shadow: 0 0 5px #3a9188;
+            user-select: none;
+            z-index: 1000;
+            cursor: default;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh);
+            }
+        }
     </style>
 </head>
 <body>
@@ -361,10 +378,54 @@
             const now = new Date();            
         }
     
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            
+            // Random starting position
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            
+            // Random size between 10px and 20px
+            const size = Math.random() * 20 + 20;
+            snowflake.style.fontSize = size + 'px';
+            
+            // Random animation duration between 5s and 10s
+            const duration = Math.random() * 5 + 5;
+            snowflake.style.animationDuration = duration + 's';
+            
+            // Add some wobble with random rotation
+            const wobble = Math.random() * 50 - 25;
+            snowflake.style.transform = `rotate(${wobble}deg)`;
+            
+            document.body.appendChild(snowflake);
+            
+            // Remove snowflake after animation completes
+            setTimeout(() => {
+                snowflake.remove();
+            }, duration * 1000);
+        }
+
+        // Create snowflakes at random intervals
+        function startSnowfall() {
+            // Create initial batch of snowflakes
+            for(let i = 0; i < 20; i++) {
+                setTimeout(createSnowflake, Math.random() * 3000);
+            }
+            
+            // Continue creating snowflakes
+            setInterval(() => {
+                if(document.querySelectorAll('.snowflake').length < 50) {
+                    createSnowflake();
+                }
+            }, 200);
+        }
+
         // Initialize and set update intervals
         function init() {
             updateWebcams();
-            fetchSnowReport();       
+            fetchSnowReport();
+            startSnowfall();
 
             // Refresh webcams every 5 minutes
             setInterval(updateWebcams, 5 * 60 * 1000);

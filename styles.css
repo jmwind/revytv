@@ -167,3 +167,54 @@ body {
         min-height: 300px;
     }
 } 
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.loading-text {
+    color: #3a9188;
+    font-size: 0.8rem;
+    text-shadow: 0 0 2px #3a9188;
+}
+
+.snowflake-spinner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid #111;
+    border-top: 3px solid #3a9188;
+    animation: spin 1s linear infinite, spinner-pulse 2s ease-in-out infinite;
+    position: relative;
+}
+
+.snowflake-spinner::before {
+    content: '❄️';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    animation: fade 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spinner-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fade {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+} 

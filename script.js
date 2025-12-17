@@ -1,5 +1,7 @@
 const CONFIG = {
-    refreshInterval: 30 * 60 * 1000, // 30 minutes
+    refreshInterval: 60 * 60 * 1000, // 1 hour
+    cacheKey: 'revytv_forecast_cache',
+    cacheExpiry: 60 * 60 * 1000, // 1 hour in milliseconds
     maxSnowflakes: 50,
     snowflakeInterval: 200,
     endpoints: {
@@ -7,6 +9,47 @@ const CONFIG = {
         weather: 'https://www.revelstokemountainresort.com/snow-weather-json/'
     }
 };
+
+// Cache Management Functions
+function getCachedData() {
+    try {
+        const cached = localStorage.getItem(CONFIG.cacheKey);
+        if (!cached) return null;
+        
+        const { data, timestamp } = JSON.parse(cached);
+        const now = Date.now();
+        const age = now - timestamp;
+        
+        // Check if cache is expired
+        if (age > CONFIG.cacheExpiry) {
+            localStorage.removeItem(CONFIG.cacheKey);
+            return null;
+        }
+        
+        return data;
+    } catch (error) {
+        console.warn('Error reading cache:', error);
+        localStorage.removeItem(CONFIG.cacheKey);
+        return null;
+    }
+}
+
+function setCachedData(data) {
+    try {
+        const cacheEntry = {
+            data: data,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CONFIG.cacheKey, JSON.stringify(cacheEntry));
+    } catch (error) {
+        console.warn('Error writing cache:', error);
+    }
+}
+
+function shouldBypassCache() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.has('refresh') || urlParams.has('nocache');
+}
 
 // Helper Functions
 function createStatCard(title, value, unit) {
@@ -39,11 +82,55 @@ function parseForecast(doc) {
 }
 
 // Snow Report Functions
+async function fetchWithRetry(url, retries = 3, timeout = 15000) {
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            const response = await fetch(url, {
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return response;
+        } catch (error) {
+            const isLastAttempt = attempt === retries - 1;
+            
+            if (isLastAttempt) {
+                throw error;
+            }
+            
+            // Exponential backoff: wait 1s, 2s, 4s before retrying
+            const delay = Math.min(1000 * Math.pow(2, attempt), 4000);
+            console.warn(`Fetch attempt ${attempt + 1} failed, retrying in ${delay}ms...`, error.message);
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
 async function fetchSnowReport() {
+    // Check cache first (unless bypassed by URL param)
+    if (!shouldBypassCache()) {
+        const cachedData = getCachedData();
+        if (cachedData) {
+            console.log('Using cached forecast data');
+            updateSnowReport(cachedData);
+            return;
+        }
+    }
+    console.log('Fetching snow report...');
+    
     try {
         const [snowReportRes, weatherRes] = await Promise.all([
-            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(CONFIG.endpoints.snowReport)),
-            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(CONFIG.endpoints.weather))
+            fetchWithRetry('https://api.allorigins.win/raw?url=' + encodeURIComponent(CONFIG.endpoints.snowReport)),
+            fetchWithRetry('https://api.allorigins.win/raw?url=' + encodeURIComponent(CONFIG.endpoints.weather))
         ]);
 
         const html = await snowReportRes.text();
@@ -70,10 +157,24 @@ async function fetchSnowReport() {
             forecast: parseForecast(doc)
         };
 
+        // Cache the data
+        setCachedData(data);
         updateSnowReport(data);
     } catch (error) {
         console.error('Error fetching snow report:', error);
-        document.getElementById('snow-data').innerHTML = 'Error loading snow report. Please refresh the page.';
+        
+        // If fetch fails, try to use cached data as fallback
+        const cachedData = getCachedData();
+        if (cachedData) {
+            console.log('Fetch failed, using cached data as fallback');
+            updateSnowReport(cachedData);
+            return;
+        }
+        
+        const errorMessage = error.name === 'AbortError' 
+            ? 'Request timed out. The service may be slow to respond. Please try refreshing in a moment.'
+            : 'Error loading snow report. Please refresh the page.';
+        document.getElementById('snow-data').innerHTML = `<div style="text-align: center; padding: 2rem; color: #fff;">${errorMessage}</div>`;
     }
 }
 
@@ -94,15 +195,30 @@ function updateSnowReport(data) {
         </div>
     `;
 
+    // Calculate max snow for percentage fill
+    const snowAmounts = data.forecast.map(day => {
+        const amount = day.snow.replace(/[^0-9]/g, '');
+        return parseInt(amount) || 0;
+    });
+    const maxSnow = Math.max(...snowAmounts, 1); // Use 1 as minimum to avoid division by zero
+
     const forecast = `
-        <div class="forecast-ticker">
-            <div class="forecast-ticker-content">
-                ${data.forecast.map(day => `
-                    <span class="forecast-item">
-                        ${day.date}:<strong>${day.snow}</strong>
-                        ${day.snow !== '0' ? '😊' : '❌'}
-                    </span>
-                `).join('')}
+        <div class="forecast-section">            
+            <div class="forecast-grid">
+                ${data.forecast.map((day, index) => {
+                    const snowAmount = day.snow.replace(/[^0-9]/g, '');
+                    const snowValue = parseInt(snowAmount) || 0;
+                    const fillPercentage = maxSnow > 0 ? (snowValue / maxSnow) * 100 : 0;
+                    const isToday = index === 0;
+                    const highlightClass = isToday ? 'highlight' : '';
+                    return `
+                        <div class="forecast-card ${highlightClass}">
+                            <div class="forecast-fill" style="height: ${fillPercentage}%"></div>
+                            <div class="forecast-day">${day.date}</div>
+                            <div class="forecast-amount">${snowAmount} cm</div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         </div>
     `;

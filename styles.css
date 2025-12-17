@@ -52,24 +52,22 @@ body {
 .snow-report {
     grid-column: 1 / -1;
     background-color: #000;
-    padding: 20px;
+    padding: 15px 20px;
     border: 4px solid #3a9188;
     box-shadow: 0 0 10px #3a9188, inset 0 0 10px #3a9188;
 }
 
 .snow-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
     text-align: center;
 }
 
 .snow-stat, .temp-stat {
     background-color: #000;
-    padding: 15px;
-    border: 2px solid #3a9188;
-    transition: all 0.2s ease;
-    animation: pulse 2s infinite;
+    padding: 8px 5px;
+    border: none;    
 }
 
 .snow-stat:hover, .temp-stat:hover {
@@ -78,13 +76,13 @@ body {
 }
 
 .snow-stat h3, .temp-stat h3 {
-    margin: 0 0 10px 0;
-    font-size: 0.7em;
+    margin: 0 0 5px 0;
+    font-size: 0.5em;
     color: #3a9188;
 }
 
 .snow-value {
-    font-size: 1.5em;
+    font-size: 1em;
     font-weight: bold;
     color: #fff;
     text-shadow: 0 0 2px #3a9188;
@@ -92,31 +90,106 @@ body {
 
 .unit {
     font-size: 0.5em;
-    margin-left: 5px;
+    margin-left: 3px;
     color: #3a9188;
 }
 
-.forecast-ticker {
-    padding: 10px 0;
-    margin-top: 20px;
+.forecast-section {
+    margin-top: 12px;          
 }
 
-.forecast-ticker-content {
+.forecast-title {
+    text-align: center;
+    font-size: 1em;
+    color: #3a9188;
+    text-shadow: 0 0 5px #3a9188;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.forecast-card {
+    background-color: #000;
+    padding: 15px 10px;
+    border: 3px solid #3a9188;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(58, 145, 136, 0.2);
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
 }
 
-.forecast-item {
+.forecast-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(58, 145, 136, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.forecast-card:hover::before {
+    left: 100%;
+}
+
+.forecast-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 5px 25px #3a9188, inset 0 0 15px rgba(58, 145, 136, 0.2);
+    border-color: #4dd0c4;
+}
+
+.forecast-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(58, 145, 136, 0.4), rgba(77, 208, 196, 0.3));
+    border-top: 2px solid #3a9188;
+    box-shadow: 0 -2px 10px rgba(58, 145, 136, 0.5);
+    transition: height 0.5s ease;
+    z-index: 0;
+}
+
+.forecast-day {
+    font-size: 0.65em;
     color: #3a9188;
-    text-shadow: 0 0 2px #3a9188;
-    font-size: 0.8em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1;
 }
 
-.forecast-item strong {
-    color: white;
-    margin-left: 8px;
+.forecast-amount {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 8px #3a9188, 0 0 15px #3a9188;
+    margin: 8px 0;
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes forecast-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px #4dd0c4, inset 0 0 20px rgba(77, 208, 196, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 30px #4dd0c4, inset 0 0 25px rgba(77, 208, 196, 0.2);
+    }
 }
 
 .snowflake {

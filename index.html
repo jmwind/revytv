@@ -3,37 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revy Snow TV</title>    
-    <link rel="icon" type="image/png" href="./flake.png">
+    <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
+    <title>Revelstoke Mountain Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="dashboard">
-        <div class="snow-report" id="snow-report">            
-            <div id="snow-data">
-                <div class="loading-container">
-                    <div class="snowflake-spinner"></div>
-                    <div class="loading-text">Loading snow report...</div>
+    <div class="container">
+        <section class="webcams">
+            <div class="webcam-grid">
+                <div class="webcam-item">
+                    <img id="webcam-gnorm" src="" alt="Gnorm" class="webcam-img">
+                </div>
+                <div class="webcam-item">
+                    <img id="webcam-kpmc" src="" alt="KPMC" class="webcam-img">
+                </div>
+                <div class="webcam-item">
+                    <img id="webcam-ripper" src="" alt="Ripper" class="webcam-img">
+                </div>
+                <div class="webcam-item">
+                    <img id="webcam-pvwk" src="" alt="PVWK" class="webcam-img">
                 </div>
             </div>
-        </div>
-        <div class="webcam-container">
-            <div class="webcam-title">Gnome</div>
-            <img class="webcam-feed" src="https://www.revelstokemountainresort.com/uploads/gnorm/gnorm.jpg" alt="Snow Gnome Webcam">
-        </div>
-        <div class="webcam-container">
-            <div class="webcam-title">Stoke (2,225ft)</div>
-            <img class="webcam-feed" id="mid-cam" alt="Stoke" src="https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_KPMC000010BF">
-        </div>
-        <div class="webcam-container">
-            <div class="webcam-title">Ripper (1,960ft)</div>
-            <img class="webcam-feed" id="summit-cam" alt="Summit Webcam" src="https://www.revelstokemountainresort.com/uploads/ripper/ripper-medium.jpg">
-        </div>
-        <div class="webcam-container">
-            <div class="webcam-title">Village</div>
-            <img class="webcam-feed" id="park-cam" alt="Terrain Park Webcam" src="https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_PVWK000010B0">
-        </div>
+        </section>
+
+        <section class="weather-section">
+            <div class="card weather-card">
+                <div class="weather-content">
+                    <div class="weather-main">
+                        <div class="temp-condition">
+                            <span id="current-temp" class="temp-value">--</span>°C
+                            <span id="weather-condition" class="condition-inline">--</span>
+                        </div>
+                        <div class="weather-details-inline">
+                            <span class="detail-inline">Wind: <strong id="wind-speed">--</strong> <strong id="wind-direction">--</strong></span>
+                            <span class="detail-inline">Subpeak: <strong id="subpeak-temp">--</strong></span>
+                            <span class="detail-inline">Ripper: <strong id="ripper-temp">--</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="forecast-section">
+            <div class="card forecast-card">
+                <div id="forecast-content" class="forecast-content">
+                    <div class="forecast-loading">Loading forecast...</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-cards">
+            <div class="card snow-card">
+                <div class="snow-content">
+                    <div class="snow-stats-grid">
+                        <div class="stat-compact highlight">
+                            <span class="stat-label-compact">New Snow</span>
+                            <span class="stat-value-compact"><span id="snow-new">--</span> cm</span>
+                        </div>                        
+                        <div class="stat-compact">
+                            <span class="stat-label-compact">Last Hour</span>
+                            <span class="stat-value-compact"><span id="snow-lasthour">--</span> cm</span>
+                        </div>
+                        <div class="stat-compact">
+                            <span class="stat-label-compact">24 Hours</span>
+                            <span class="stat-value-compact"><span id="snow-24h">--</span> cm</span>
+                        </div>
+                        <div class="stat-compact">
+                            <span class="stat-label-compact">48 Hours</span>
+                            <span class="stat-value-compact"><span id="snow-48h">--</span> cm</span>
+                        </div>
+                        <div class="stat-compact">
+                            <span class="stat-label-compact">7 Days</span>
+                            <span class="stat-value-compact"><span id="snow-7days">--</span> cm</span>
+                        </div>
+                        <div class="stat-compact">
+                            <span class="stat-label-compact">Base Depth</span>
+                            <span class="stat-value-compact"><span id="base-depth">--</span> cm</span>
+                        </div>
+                        <div class="stat-compact">
+                            <span class="stat-label-compact">Season Total</span>
+                            <span class="stat-value-compact"><span id="snow-season">--</span> cm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
-    <script src="script.js" defer></script>
+
+    <script src="app.js"></script>
 </body>
 </html>

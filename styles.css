@@ -167,7 +167,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    justify-content: flex-start;
+    justify-content: space-between;
 }
 
 .forecast-loading {
@@ -437,19 +437,24 @@ body {
 /* Large TV Screens - Maximize space utilization */
 @media (min-width: 1920px) {
     body {
-        padding: 15px;
+        padding: 12px;
     }
 
     .container {
-        gap: 15px;
+        gap: 12px;
+    }
+
+    .webcams {
+        max-height: calc(100vh - 400px);
+        min-height: 400px;
     }
 
     .webcam-grid {
-        gap: 15px;
+        gap: 12px;
     }
 
     .webcam-item {
-        padding: 8px;
+        padding: 6px;
     }
 
     /* Weather overlay styling */
@@ -477,13 +482,17 @@ body {
     }
 
     .card {
-        padding: 20px;
+        padding: 16px;
     }
 
     /* LARGER FORECAST CARDS - EMPHASIZE SNOW! */
+    .forecast-content {
+        gap: 12px;
+    }
+
     .forecast-day {
         width: 170px;
-        padding: 16px 18px;
+        padding: 14px 16px;
         flex: 0 0 auto;
     }
 
@@ -508,11 +517,11 @@ body {
     /* LARGER SNOW STATS - EMPHASIZE THE NUMBERS! */
     .snow-stats-grid {
         grid-template-columns: repeat(7, 1fr);
-        gap: 15px;
+        gap: 12px;
     }
 
     .stat-compact {
-        padding: 14px 18px;
+        padding: 12px 16px;
     }
 
     .stat-label-compact {
@@ -524,28 +533,36 @@ body {
         font-weight: 700;
     }
 
-    .forecast-section,
+    .forecast-section {
+        margin-bottom: 10px;
+    }
+
     .data-cards {
-        margin-bottom: 15px;
+        margin-bottom: 0;
     }
 }
 
 /* Ultra-wide TV Screens - Even better space utilization */
 @media (min-width: 2560px) {
     body {
-        padding: 20px;
+        padding: 15px;
     }
 
     .container {
-        gap: 20px;
+        gap: 15px;
+    }
+
+    .webcams {
+        max-height: calc(100vh - 450px);
+        min-height: 450px;
     }
 
     .webcam-grid {
-        gap: 20px;
+        gap: 15px;
     }
 
     .webcam-item {
-        padding: 10px;
+        padding: 8px;
     }
 
     /* Weather overlay - bigger on ultra-wide */
@@ -571,7 +588,7 @@ body {
     /* EVEN BIGGER SNOW EMPHASIS */
     .forecast-day {
         width: 190px;
-        padding: 18px 20px;
+        padding: 16px 18px;
         flex: 0 0 auto;
     }
 
@@ -598,19 +615,23 @@ body {
     }
 
     .card {
-        padding: 25px;
-    }
-
-    .forecast-day {
-        padding: 18px 22px;
+        padding: 18px;
     }
 
     .stat-compact {
-        padding: 16px 20px;
+        padding: 14px 18px;
     }
 
     .elevation-ref-line {
         font-size: 1.1rem;
+    }
+
+    .forecast-section {
+        margin-bottom: 10px;
+    }
+
+    .data-cards {
+        margin-bottom: 0;
     }
 }
 

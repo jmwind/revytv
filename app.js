@@ -515,15 +515,34 @@ function updateWebcams() {
     Object.keys(CONFIG.webcams).forEach(camKey => {
         const img = elements.webcams[camKey];
         const baseUrl = CONFIG.webcams[camKey];
+        const webcamItem = img.closest('.webcam-item');
+
+        // Remove loaded class to show loading indicator
+        if (webcamItem) {
+            webcamItem.classList.remove('loaded');
+        }
 
         // Add cache-busting parameter
         const separator = baseUrl.includes('?') ? '&' : '?';
         img.src = `${baseUrl}${separator}t=${timestamp}`;
 
+        // Handle successful load
+        img.onload = () => {
+            if (webcamItem) {
+                webcamItem.classList.add('loaded');
+            }
+        };
+
         // Handle load errors gracefully
         img.onerror = () => {
             console.warn(`Failed to load webcam: ${camKey}`);
-            img.alt = `${img.alt} (unavailable)`;
+            if (webcamItem) {
+                webcamItem.classList.add('loaded');
+                const loadingDiv = webcamItem.querySelector('.webcam-loading');
+                if (loadingDiv) {
+                    loadingDiv.textContent = 'Unavailable';
+                }
+            }
         };
     });
 }

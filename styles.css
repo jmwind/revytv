@@ -10,27 +10,39 @@ body {
     background-color: #1a1a1a;
     color: #e0e0e0;
     line-height: 1.4;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     padding: 10px;
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Weather Section */
-.weather-section {
-    margin-bottom: 10px;
-}
-
-.weather-section .card {
-    width: 100%;
+/* Weather Overlay */
+.weather-overlay {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    background: rgba(26, 26, 26, 0.5);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    text-align: center;
 }
 
 /* Forecast Section */
 .forecast-section {
     margin-bottom: 10px;
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 
 .forecast-section .card {
@@ -42,7 +54,9 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 
 .card {
@@ -55,11 +69,13 @@ body {
 /* Weather Card */
 .weather-content {
     display: flex;
+    justify-content: center;
 }
 
 .weather-main {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 20px;
     width: 100%;
 }
@@ -89,6 +105,7 @@ body {
     display: flex;
     gap: 15px;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -117,26 +134,26 @@ body {
 .stat-compact {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding: 6px 10px;
+    gap: 4px;
+    padding: 10px 14px;
     background-color: #252525;
     border-radius: 4px;
 }
 
 .stat-compact.highlight {
     background-color: #2a3f5f;
-    border: 1px solid #4a9eff;
+    border: 2px solid #4a9eff;
 }
 
 .stat-label-compact {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     color: #999;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
 
 .stat-value-compact {
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: #ffffff;
 }
@@ -149,7 +166,8 @@ body {
 .forecast-content {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
+    justify-content: flex-start;
 }
 
 .forecast-loading {
@@ -162,51 +180,57 @@ body {
 
 .elevation-ref-line {
     width: 100%;
-    font-size: 0.7rem;
-    color: #666;
+    font-size: 0.8rem;
+    color: #888;
     text-align: center;
-    margin-bottom: 4px;
-    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
 }
 
 /* Forecast Days */
 .forecast-day {
-    flex: 1 1 auto;
-    min-width: 140px;
-    padding: 8px 12px;
+    flex: 0 0 auto;
+    width: 140px;
+    padding: 12px 14px;
     background-color: #252525;
     border-radius: 4px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .forecast-day.has-snow {
     background-color: #2a3f5f;
-    border-left: 3px solid #4a9eff;
+    border-left: 4px solid #4a9eff;
 }
 
 .forecast-day.no-snow {
     background-color: #4a2a2a;
-    border-left: 3px solid #d32f2f;
+    border-left: 4px solid #d32f2f;
 }
 
 .forecast-day-content {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 }
 
 .forecast-date {
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 500;
     color: #e0e0e0;
+    white-space: nowrap;
+    width: 100%;
 }
 
 .forecast-amount {
-    font-size: 1.2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #4a9eff;
+    white-space: nowrap;
+    width: 100%;
+    text-align: left;
 }
 
 .forecast-amount.zero {
@@ -214,21 +238,28 @@ body {
 }
 
 .forecast-freezing {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: #999;
     font-style: italic;
     line-height: 1.3;
+    width: 100%;
 }
 
 /* Webcams Section */
 .webcams {
     margin: 0 0 10px 0;
+    flex: 1;
+    min-height: 300px;
+    display: flex;
+    position: relative;
 }
 
 .webcam-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
+    width: 100%;
+    height: 100%;
 }
 
 .webcam-item {
@@ -236,28 +267,77 @@ body {
     border-radius: 6px;
     padding: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.webcam-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1a1a1a;
+    color: #999;
+    font-size: 0.9rem;
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.webcam-item.loaded .webcam-loading {
+    display: none;
 }
 
 .webcam-img {
     width: 100%;
-    height: auto;
+    height: 100%;
     border-radius: 4px;
     background-color: #1a1a1a;
-    min-height: 150px;
     object-fit: cover;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.webcam-item.loaded .webcam-img {
+    opacity: 1;
 }
 
 .webcam-img[src=""], .webcam-img:not([src]) {
-    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    opacity: 0;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     body {
         padding: 5px;
+        height: auto;
+        overflow: auto;
+    }
+
+    .container {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .webcams {
+        flex: 0 0 auto;
+        min-height: 200px;
+        flex-direction: column;
+    }
+
+    /* Weather overlay becomes smaller on mobile */
+    .weather-overlay {
+        position: static;
+        margin-top: 10px;
+        padding: 12px 15px;
     }
 
     .data-cards {
@@ -268,9 +348,13 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .webcam-img {
+        min-height: 150px;
+    }
+
     .weather-main {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
         gap: 10px;
     }
 
@@ -283,14 +367,41 @@ body {
     }
 
     .forecast-day {
-        min-width: 120px;
-        flex: 1 1 calc(50% - 4px);
+        width: 130px;
+        flex: 0 0 auto;
     }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
+    body {
+        height: auto;
+        overflow: auto;
+    }
+
+    .container {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .webcams {
+        flex: 0 0 auto;
+        min-height: 350px;
+    }
+
+    /* Weather overlay on tablets */
+    .weather-overlay {
+        padding: 15px 20px;
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+    }
+
     .webcam-grid {
         grid-template-columns: repeat(4, 1fr);
+    }
+
+    .webcam-img {
+        min-height: 180px;
     }
 
     .snow-stats-grid {
@@ -298,14 +409,208 @@ body {
     }
 
     .forecast-day {
-        flex: 1 1 calc(25% - 6px);
+        width: 150px;
+        flex: 0 0 auto;
     }
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1025px) and (max-width: 1919px) {
+    /* Medium desktop/laptop screens */
+    .weather-overlay {
+        padding: 16px 22px;
+    }
+
     .forecast-day {
-        flex: 1 1 auto;
-        max-width: calc(12.5% - 7px);
+        width: 160px;
+        flex: 0 0 auto;
+    }
+
+    .forecast-amount {
+        font-size: 1.8rem;
+    }
+
+    .stat-value-compact {
+        font-size: 1.6rem;
+    }
+}
+
+/* Large TV Screens - Maximize space utilization */
+@media (min-width: 1920px) {
+    body {
+        padding: 15px;
+    }
+
+    .container {
+        gap: 15px;
+    }
+
+    .webcam-grid {
+        gap: 15px;
+    }
+
+    .webcam-item {
+        padding: 8px;
+    }
+
+    /* Weather overlay styling */
+    .weather-overlay {
+        padding: 20px 25px;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+    }
+
+    .temp-value {
+        font-size: 3rem;
+    }
+
+    .temp-condition {
+        font-size: 1.8rem;
+    }
+
+    .detail-inline {
+        font-size: 1.1rem;
+    }
+
+    .weather-details-inline {
+        gap: 25px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    /* LARGER FORECAST CARDS - EMPHASIZE SNOW! */
+    .forecast-day {
+        width: 170px;
+        padding: 16px 18px;
+        flex: 0 0 auto;
+    }
+
+    .forecast-date {
+        font-size: 1.3rem;
+    }
+
+    .forecast-amount {
+        font-size: 2.2rem;
+        font-weight: 800;
+    }
+
+    .forecast-freezing {
+        font-size: 0.9rem;
+    }
+
+    .elevation-ref-line {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    /* LARGER SNOW STATS - EMPHASIZE THE NUMBERS! */
+    .snow-stats-grid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 15px;
+    }
+
+    .stat-compact {
+        padding: 14px 18px;
+    }
+
+    .stat-label-compact {
+        font-size: 1rem;
+    }
+
+    .stat-value-compact {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .forecast-section,
+    .data-cards {
+        margin-bottom: 15px;
+    }
+}
+
+/* Ultra-wide TV Screens - Even better space utilization */
+@media (min-width: 2560px) {
+    body {
+        padding: 20px;
+    }
+
+    .container {
+        gap: 20px;
+    }
+
+    .webcam-grid {
+        gap: 20px;
+    }
+
+    .webcam-item {
+        padding: 10px;
+    }
+
+    /* Weather overlay - bigger on ultra-wide */
+    .weather-overlay {
+        padding: 25px 30px;
+        bottom: 25px;
+        left: 25px;
+        right: 25px;
+    }
+
+    .temp-value {
+        font-size: 3.5rem;
+    }
+
+    .temp-condition {
+        font-size: 2rem;
+    }
+
+    .detail-inline {
+        font-size: 1.3rem;
+    }
+
+    /* EVEN BIGGER SNOW EMPHASIS */
+    .forecast-day {
+        width: 190px;
+        padding: 18px 20px;
+        flex: 0 0 auto;
+    }
+
+    .forecast-amount {
+        font-size: 2.8rem;
+        font-weight: 900;
+    }
+
+    .forecast-date {
+        font-size: 1.5rem;
+    }
+
+    .forecast-freezing {
+        font-size: 1rem;
+    }
+
+    .stat-value-compact {
+        font-size: 2.5rem;
+        font-weight: 800;
+    }
+
+    .stat-label-compact {
+        font-size: 1.1rem;
+    }
+
+    .card {
+        padding: 25px;
+    }
+
+    .forecast-day {
+        padding: 18px 22px;
+    }
+
+    .stat-compact {
+        padding: 16px 20px;
+    }
+
+    .elevation-ref-line {
+        font-size: 1.1rem;
     }
 }
 

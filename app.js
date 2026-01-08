@@ -23,6 +23,10 @@ const CONFIG = {
 // State
 let refreshTimer = null;
 let snowReportData = null;
+let forecastData = [];
+let viewToggleTimer = null;
+let currentView = 'dashboard'; // 'video' or 'dashboard'
+let isTVMode = false; // Will be set based on query param
 
 // DOM Elements
 const elements = {
@@ -45,7 +49,13 @@ const elements = {
         kpmc: document.getElementById('webcam-kpmc'),
         ripper: document.getElementById('webcam-ripper'),
         pvwk: document.getElementById('webcam-pvwk')
-    }
+    },
+    // Video overlay elements
+    videoView: document.querySelector('.video-view'),
+    dashboardView: document.querySelector('.dashboard-view'),
+    tickerContainer: document.querySelector('.ticker-container'),
+    tickerContent: document.getElementById('ticker-content'),
+    videoForecastContent: document.getElementById('video-forecast-content')
 };
 
 // Helper function to fetch with timeout
@@ -430,6 +440,7 @@ function extractForecastData(doc, text) {
         console.log('=== FINAL FORECAST DATA ===');
         console.log('Extracted forecast data:', forecastData);
         displayForecast(forecastData);
+        updateVideoForecast(forecastData);
 
     } catch (error) {
         console.error('Error extracting forecast data:', error);
@@ -562,6 +573,9 @@ async function refreshAllData() {
 
         // Update webcams
         updateWebcams();
+
+        // Update ticker with latest data
+        updateTicker();
     } catch (error) {
         console.error('Error during refresh:', error);
         showError('Failed to refresh data');
@@ -580,12 +594,158 @@ function startAutoRefresh() {
     console.log(`Auto-refresh enabled (every ${CONFIG.refreshInterval / 60000} minutes)`);
 }
 
+// Update video forecast overlay
+function updateVideoForecast(forecast) {
+    if (!elements.videoForecastContent) {
+        console.error('Video forecast content element not found!');
+        return;
+    }
+
+    if (!forecast || forecast.length === 0) {
+        elements.videoForecastContent.innerHTML = '<div style="color: #999; font-size: 1.2rem;">No forecast data available</div>';
+        return;
+    }
+
+    // Store globally so we can use it later
+    forecastData = forecast;
+
+    let html = '';
+    forecast.forEach(day => {
+        const amount = day.amount || 0;
+        const hasSnow = amount > 0;
+        const dayClass = hasSnow ? 'has-snow' : 'no-snow';
+        const amountClass = hasSnow ? '' : 'zero';
+
+        // Format freezing level display
+        let freezingLevelText = '';
+        if (day.freezingLevel !== null && day.freezingLevel !== undefined) {
+            if (day.freezingLevel === 'valley bottom') {
+                freezingLevelText = '<div class="video-forecast-freezing">Valley bottom</div>';
+            } else {
+                freezingLevelText = `<div class="video-forecast-freezing">${day.freezingLevel}m</div>`;
+            }
+        }
+
+        html += `
+            <div class="video-forecast-day ${dayClass}">
+                <div class="video-forecast-day-name">${day.day}</div>
+                <div class="video-forecast-amount ${amountClass}">${amount} cm</div>
+                ${freezingLevelText}
+            </div>
+        `;
+    });
+
+    elements.videoForecastContent.innerHTML = html;
+}
+
+// Update ticker with all dashboard data
+function updateTicker() {
+    if (!elements.tickerContent) {
+        console.error('Ticker content element not found!');
+        return;
+    }
+
+    const tickerItems = [];
+
+    // Temperature and conditions
+    tickerItems.push(`<span class="ticker-label">Temperature:</span><span class="ticker-value">${elements.currentTemp.textContent}°C</span>`);
+    tickerItems.push(`<span class="ticker-label">Conditions:</span><span class="ticker-value">${elements.weatherCondition.textContent}</span>`);
+
+    // Wind
+    tickerItems.push(`<span class="ticker-label">Wind:</span><span class="ticker-value">${elements.windSpeed.textContent} ${elements.windDirection.textContent}</span>`);
+
+    // Snow stats
+    tickerItems.push(`<span class="ticker-label">New Snow:</span><span class="ticker-value">${elements.snowNew.textContent} cm</span>`);
+    tickerItems.push(`<span class="ticker-label">Last Hour:</span><span class="ticker-value">${elements.snowLastHour.textContent} cm</span>`);
+    tickerItems.push(`<span class="ticker-label">24 Hours:</span><span class="ticker-value">${elements.snow24h.textContent} cm</span>`);
+    tickerItems.push(`<span class="ticker-label">48 Hours:</span><span class="ticker-value">${elements.snow48h.textContent} cm</span>`);
+    tickerItems.push(`<span class="ticker-label">7 Days:</span><span class="ticker-value">${elements.snow7days.textContent} cm</span>`);
+    tickerItems.push(`<span class="ticker-label">Base Depth:</span><span class="ticker-value">${elements.baseDepth.textContent} cm</span>`);
+    tickerItems.push(`<span class="ticker-label">Season Total:</span><span class="ticker-value">${elements.snowSeason.textContent} cm</span>`);
+
+    // Join with separators and duplicate for seamless loop
+    const tickerHTML = tickerItems.map(item =>
+        `<span class="ticker-item">${item}</span><span class="ticker-separator"></span>`
+    ).join('');
+
+    // Duplicate content for seamless scrolling
+    elements.tickerContent.innerHTML = tickerHTML + tickerHTML;
+}
+
+// Toggle between video and dashboard views
+function toggleView() {
+    if (currentView === 'video') {
+        // Switch to dashboard
+        currentView = 'dashboard';
+        elements.videoView.classList.remove('active');
+        elements.dashboardView.classList.add('active');
+        elements.tickerContainer.classList.remove('active');
+        console.log('Switched to dashboard view');
+    } else {
+        // Switch to video
+        currentView = 'video';
+        elements.videoView.classList.add('active');
+        elements.dashboardView.classList.remove('active');
+        elements.tickerContainer.classList.add('active');
+        updateTicker();
+        console.log('Switched to video view');
+    }
+}
+
+// Start view toggle timer (every 60 seconds)
+function startViewToggle() {
+    // Clear any existing timer
+    if (viewToggleTimer) {
+        clearInterval(viewToggleTimer);
+    }
+
+    // Start with video view
+    currentView = 'video';
+    elements.videoView.classList.add('active');
+    elements.dashboardView.classList.remove('active');
+    elements.tickerContainer.classList.add('active');
+    updateTicker();
+
+    // Toggle every 60 seconds
+    viewToggleTimer = setInterval(toggleView, 60000);
+    console.log('View toggle enabled (every 60 seconds)');
+}
+
+// Restart the toggle timer without changing current view
+function restartToggleTimer() {
+    // Clear any existing timer
+    if (viewToggleTimer) {
+        clearInterval(viewToggleTimer);
+    }
+
+    // Restart timer from current view
+    viewToggleTimer = setInterval(toggleView, 60000);
+    console.log('View toggle timer restarted');
+}
+
 // Initialize the application
 async function init() {
     console.log('Initializing Revelstoke Mountain Dashboard...');
 
+    // Check if TV mode is enabled via query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    isTVMode = urlParams.has('tv');
+
+    console.log('TV Mode:', isTVMode);
+
     await refreshAllData();
     startAutoRefresh();
+
+    if (isTVMode) {
+        // Start in video view with auto-toggle
+        startViewToggle();
+    } else {
+        // Start in dashboard view
+        currentView = 'dashboard';
+        elements.videoView.classList.remove('active');
+        elements.dashboardView.classList.add('active');
+        elements.tickerContainer.classList.remove('active');
+    }
 
     console.log('Dashboard initialized successfully');
 }
@@ -601,5 +761,8 @@ if (document.readyState === 'loading') {
 window.addEventListener('beforeunload', () => {
     if (refreshTimer) {
         clearInterval(refreshTimer);
+    }
+    if (viewToggleTimer) {
+        clearInterval(viewToggleTimer);
     }
 });

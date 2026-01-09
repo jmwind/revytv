@@ -24,7 +24,6 @@ const CONFIG = {
 let refreshTimer = null;
 let snowReportData = null;
 let forecastData = [];
-let viewToggleTimer = null;
 let currentView = 'dashboard'; // 'video' or 'dashboard'
 let isTVMode = false; // Will be set based on query param
 
@@ -55,7 +54,13 @@ const elements = {
     dashboardView: document.querySelector('.dashboard-view'),
     tickerContainer: document.querySelector('.ticker-container'),
     tickerContent: document.getElementById('ticker-content'),
-    videoForecastContent: document.getElementById('video-forecast-content')
+    videoForecastContent: document.getElementById('video-forecast-content'),
+    videoWebcams: {
+        gnorm: document.getElementById('video-webcam-gnorm'),
+        kpmc: document.getElementById('video-webcam-kpmc'),
+        ripper: document.getElementById('video-webcam-ripper'),
+        pvwk: document.getElementById('video-webcam-pvwk')
+    }
 };
 
 // Helper function to fetch with timeout
@@ -558,6 +563,25 @@ function updateWebcams() {
     });
 }
 
+// Update video overlay webcam images with cache-busting
+function updateVideoWebcams() {
+    const timestamp = Date.now();
+
+    Object.keys(CONFIG.webcams).forEach(camKey => {
+        const img = elements.videoWebcams[camKey];
+        if (!img) return;
+
+        const baseUrl = CONFIG.webcams[camKey];
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        img.src = `${baseUrl}${separator}t=${timestamp}`;
+
+        // Handle load errors gracefully
+        img.onerror = () => {
+            console.warn(`Failed to load video webcam: ${camKey}`);
+        };
+    });
+}
+
 // Show error message
 function showError(message) {
     console.error(message);
@@ -573,6 +597,11 @@ async function refreshAllData() {
 
         // Update webcams
         updateWebcams();
+
+        // Update video webcams if in TV mode
+        if (isTVMode) {
+            updateVideoWebcams();
+        }
 
         // Update ticker with latest data
         updateTicker();
@@ -663,65 +692,19 @@ function updateTicker() {
     tickerItems.push(`<span class="ticker-label">Base Depth:</span><span class="ticker-value">${elements.baseDepth.textContent} cm</span>`);
     tickerItems.push(`<span class="ticker-label">Season Total:</span><span class="ticker-value">${elements.snowSeason.textContent} cm</span>`);
 
-    // Join with separators and duplicate for seamless loop
-    const tickerHTML = tickerItems.map(item =>
-        `<span class="ticker-item">${item}</span><span class="ticker-separator"></span>`
-    ).join('');
+    // Build ticker HTML with separators between items
+    const tickerHTML = tickerItems.map((item, index) => {
+        const separator = index < tickerItems.length - 1 ? '<span class="ticker-separator"></span>' : '';
+        return `<span class="ticker-item">${item}</span>${separator}`;
+    }).join('');
+
+    // Add a separator before duplicating to separate the two loops
+    const withSeparator = tickerHTML + '<span class="ticker-separator"></span>';
 
     // Duplicate content for seamless scrolling
-    elements.tickerContent.innerHTML = tickerHTML + tickerHTML;
+    elements.tickerContent.innerHTML = withSeparator + withSeparator;
 }
 
-// Toggle between video and dashboard views
-function toggleView() {
-    if (currentView === 'video') {
-        // Switch to dashboard
-        currentView = 'dashboard';
-        elements.videoView.classList.remove('active');
-        elements.dashboardView.classList.add('active');
-        elements.tickerContainer.classList.remove('active');
-        console.log('Switched to dashboard view');
-    } else {
-        // Switch to video
-        currentView = 'video';
-        elements.videoView.classList.add('active');
-        elements.dashboardView.classList.remove('active');
-        elements.tickerContainer.classList.add('active');
-        updateTicker();
-        console.log('Switched to video view');
-    }
-}
-
-// Start view toggle timer (every 60 seconds)
-function startViewToggle() {
-    // Clear any existing timer
-    if (viewToggleTimer) {
-        clearInterval(viewToggleTimer);
-    }
-
-    // Start with video view
-    currentView = 'video';
-    elements.videoView.classList.add('active');
-    elements.dashboardView.classList.remove('active');
-    elements.tickerContainer.classList.add('active');
-    updateTicker();
-
-    // Toggle every 60 seconds
-    viewToggleTimer = setInterval(toggleView, 60000);
-    console.log('View toggle enabled (every 60 seconds)');
-}
-
-// Restart the toggle timer without changing current view
-function restartToggleTimer() {
-    // Clear any existing timer
-    if (viewToggleTimer) {
-        clearInterval(viewToggleTimer);
-    }
-
-    // Restart timer from current view
-    viewToggleTimer = setInterval(toggleView, 60000);
-    console.log('View toggle timer restarted');
-}
 
 // Initialize the application
 async function init() {
@@ -737,10 +720,14 @@ async function init() {
     startAutoRefresh();
 
     if (isTVMode) {
-        // Start in video view with auto-toggle
-        startViewToggle();
+        // Show video view with ticker and forecast
+        currentView = 'video';
+        elements.videoView.classList.add('active');
+        elements.dashboardView.classList.remove('active');
+        elements.tickerContainer.classList.add('active');
+        updateTicker();
     } else {
-        // Start in dashboard view
+        // Show dashboard view
         currentView = 'dashboard';
         elements.videoView.classList.remove('active');
         elements.dashboardView.classList.add('active');
@@ -761,8 +748,5 @@ if (document.readyState === 'loading') {
 window.addEventListener('beforeunload', () => {
     if (refreshTimer) {
         clearInterval(refreshTimer);
-    }
-    if (viewToggleTimer) {
-        clearInterval(viewToggleTimer);
     }
 });

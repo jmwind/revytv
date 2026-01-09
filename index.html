@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revelstoke Mountain Dashboard</title>
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
     <div class="video-view">
@@ -18,10 +18,20 @@
             allowfullscreen>
         </iframe>
 
+        <div class="video-webcams-left">
+            <img id="video-webcam-gnorm" class="video-forecast-webcam" alt="Gnorm">
+            <img id="video-webcam-kpmc" class="video-forecast-webcam" alt="KPMC">
+        </div>
+
         <div class="video-forecast-overlay">
             <div id="video-forecast-content" class="video-forecast-content">
                 <!-- Forecast will be populated here -->
             </div>
+        </div>
+
+        <div class="video-webcams-right">
+            <img id="video-webcam-ripper" class="video-forecast-webcam" alt="Ripper">
+            <img id="video-webcam-pvwk" class="video-forecast-webcam" alt="PVWK">
         </div>
     </div>
 
@@ -115,6 +125,6 @@
         </section>
     </div>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=10"></script>
 </body>
 </html>

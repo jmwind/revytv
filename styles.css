@@ -46,6 +46,35 @@ body {
     height: 100%;
 }
 
+/* Video Webcams on Sides */
+.video-webcams-left,
+.video-webcams-right {
+    position: absolute;
+    bottom: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.video-webcams-left {
+    left: 20px;
+}
+
+.video-webcams-right {
+    right: 20px;
+}
+
+.video-forecast-webcam {
+    width: 320px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid #4a9eff;
+    background-color: #1a1a1a;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
 /* Video Forecast Overlay */
 .video-forecast-overlay {
     position: absolute;
@@ -59,7 +88,7 @@ body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
     border: 2px solid #4a9eff;
     z-index: 100;
-    max-width: 95%;
+    max-width: 60%;
 }
 
 .video-forecast-content {
@@ -132,6 +161,7 @@ body {
     border-top: 4px solid #4a9eff;
     z-index: 9999;
     display: none;
+    contain: layout style paint;
 }
 
 .ticker-container.active {
@@ -139,20 +169,21 @@ body {
 }
 
 .ticker-content {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     white-space: nowrap;
-    animation: scroll-left 20s linear infinite;
+    animation: scroll-left 11.68s linear infinite;
     height: 60px;
     line-height: 60px;
+    will-change: transform;
 }
 
 @keyframes scroll-left {
-    0% {
-        transform: translateX(100%);
+    from {
+        transform: translate3d(0, 0, 0);
     }
-    100% {
-        transform: translateX(-100%);
+    to {
+        transform: translate3d(-50%, 0, 0);
     }
 }
 

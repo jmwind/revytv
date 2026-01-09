@@ -649,7 +649,7 @@ function updateVideoForecast(forecast) {
         let freezingLevelText = '';
         if (day.freezingLevel !== null && day.freezingLevel !== undefined) {
             if (day.freezingLevel === 'valley bottom') {
-                freezingLevelText = '<div class="video-forecast-freezing">Valley bottom</div>';
+                freezingLevelText = '<div class="video-forecast-freezing">Bottom</div>';
             } else {
                 freezingLevelText = `<div class="video-forecast-freezing">${day.freezingLevel}m</div>`;
             }

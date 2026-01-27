@@ -444,6 +444,25 @@ function extractForecastData(doc, text) {
 
         console.log('=== FINAL FORECAST DATA ===');
         console.log('Extracted forecast data:', forecastData);
+
+        // Sort forecast: Today first, then Tonight, then weekdays in order starting from tomorrow
+        const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        const sortOrder = (day) => {
+            if (day === 'Today') return 0;
+            if (day === 'Tonight') return 1;
+            const dayIndex = weekdays.indexOf(day);
+            if (dayIndex === -1) return 99;
+            // Calculate days from today (tomorrow = 2, day after = 3, etc.)
+            let daysFromToday = dayIndex - todayIndex;
+            if (daysFromToday <= 0) daysFromToday += 7;
+            return 1 + daysFromToday; // +1 so Tomorrow starts at 2 (after Tonight)
+        };
+
+        forecastData.sort((a, b) => sortOrder(a.day) - sortOrder(b.day));
+        console.log('Sorted forecast data:', forecastData);
+
         displayForecast(forecastData);
         updateVideoForecast(forecastData);
 

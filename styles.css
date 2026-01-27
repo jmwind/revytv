@@ -93,6 +93,8 @@ body {
     flex-wrap: nowrap;
     justify-content: center;
     overflow-x: auto;
+    background: transparent;
+    backdrop-filter: none;
 }
 
 .video-forecast-day {
@@ -461,8 +463,8 @@ body {
 /* Webcams Section */
 .webcams {
     margin: 0 0 10px 0;
-    flex: 1;
-    min-height: 300px;
+    flex: 0.85;
+    min-height: 255px;
     display: flex;
     position: relative;
 }

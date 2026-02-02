@@ -5,6 +5,86 @@
     box-sizing: border-box;
 }
 
+/* Full Page Loading Overlay */
+@keyframes snowflake-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.4)); }
+    50% { filter: drop-shadow(0 0 20px rgba(74, 158, 255, 0.8)); }
+}
+
+@keyframes fade-out {
+    0% { opacity: 1; }
+    100% { opacity: 0; visibility: hidden; }
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0f1724 0%, #1a2a3a 50%, #0d1520 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.snowflake-loader {
+    width: 120px;
+    height: 120px;
+    animation: snowflake-rotate 8s linear infinite, pulse-glow 2s ease-in-out infinite;
+}
+
+.snowflake-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.snowflake-group line {
+    stroke: #4a9eff;
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.loading-message {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    letter-spacing: 1px;
+}
+
+.loading-sub {
+    font-size: 0.9rem;
+    color: #87ceeb;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+/* Shimmer effect for loading placeholders */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
     background-color: #1a1a1a;
@@ -144,6 +224,29 @@ body {
     color: #999;
     font-style: italic;
     text-align: center;
+}
+
+/* Compact mode for 9+ forecast days */
+.video-forecast-content.compact {
+    gap: 6px;
+}
+
+.video-forecast-content.compact .video-forecast-day {
+    padding: 8px 10px;
+    min-width: 70px;
+    gap: 3px;
+}
+
+.video-forecast-content.compact .video-forecast-day-name {
+    font-size: 0.52rem;
+}
+
+.video-forecast-content.compact .video-forecast-amount {
+    font-size: 0.9rem;
+}
+
+.video-forecast-content.compact .video-forecast-freezing {
+    font-size: 0.65rem;
 }
 
 /* Ticker Container */
@@ -386,11 +489,10 @@ body {
 }
 
 .forecast-loading {
-    text-align: center;
-    color: #999;
-    padding: 10px;
-    font-size: 0.85rem;
+    display: flex;
+    justify-content: center;
     width: 100%;
+    padding: 20px;
 }
 
 .elevation-ref-line {
@@ -498,9 +600,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #1a1a1a;
-    color: #999;
-    font-size: 0.9rem;
+    background: linear-gradient(90deg, #1a1a2e 0%, #2d2d44 50%, #1a1a2e 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
     z-index: 1;
     border-radius: 4px;
 }

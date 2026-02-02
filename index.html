@@ -5,9 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revelstoke Mountain Dashboard</title>
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body>
+    <!-- Full page loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="snowflake-loader">
+                <svg viewBox="0 0 100 100" class="snowflake-svg">
+                    <g class="snowflake-group">
+                        <!-- Main spokes -->
+                        <line x1="50" y1="10" x2="50" y2="90" />
+                        <line x1="10" y1="50" x2="90" y2="50" />
+                        <line x1="21" y1="21" x2="79" y2="79" />
+                        <line x1="79" y1="21" x2="21" y2="79" />
+                        <!-- Branch details -->
+                        <line x1="50" y1="20" x2="40" y2="30" />
+                        <line x1="50" y1="20" x2="60" y2="30" />
+                        <line x1="50" y1="80" x2="40" y2="70" />
+                        <line x1="50" y1="80" x2="60" y2="70" />
+                        <line x1="20" y1="50" x2="30" y2="40" />
+                        <line x1="20" y1="50" x2="30" y2="60" />
+                        <line x1="80" y1="50" x2="70" y2="40" />
+                        <line x1="80" y1="50" x2="70" y2="60" />
+                    </g>
+                </svg>
+            </div>
+            <div class="loading-message">Loading Snow Report</div>
+            <div class="loading-sub">Revelstoke Mountain Resort</div>
+        </div>
+    </div>
+
     <div class="video-view">
         <iframe id="youtube-player"            
             src="https://www.youtube-nocookie.com/embed/spJ5dqXi6ro?si=Bx7AG1uT-5hXJRKN&autoplay=1&mute=1&loop=1&playlist=spJ5dqXi6ro&controls=0"
@@ -37,7 +65,6 @@
 
     <div class="ticker-container">
         <div class="ticker-content" id="ticker-content">
-            <span class="ticker-item">Loading...</span>
         </div>
     </div>
 
@@ -45,19 +72,19 @@
         <section class="webcams">
             <div class="webcam-grid">
                 <div class="webcam-item">
-                    <div class="webcam-loading">Loading...</div>
+                    <div class="webcam-loading"></div>
                     <img id="webcam-gnorm" src="" alt="Gnorm" class="webcam-img">
                 </div>
                 <div class="webcam-item">
-                    <div class="webcam-loading">Loading...</div>
+                    <div class="webcam-loading"></div>
                     <img id="webcam-kpmc" src="" alt="KPMC" class="webcam-img">
                 </div>
                 <div class="webcam-item">
-                    <div class="webcam-loading">Loading...</div>
+                    <div class="webcam-loading"></div>
                     <img id="webcam-ripper" src="" alt="Ripper" class="webcam-img">
                 </div>
                 <div class="webcam-item">
-                    <div class="webcam-loading">Loading...</div>
+                    <div class="webcam-loading"></div>
                     <img id="webcam-pvwk" src="" alt="PVWK" class="webcam-img">
                 </div>
             </div>
@@ -82,7 +109,6 @@
         <section class="forecast-section">
             <div class="card forecast-card">
                 <div id="forecast-content" class="forecast-content">
-                    <div class="forecast-loading">Loading forecast...</div>
                 </div>
             </div>
         </section>
@@ -125,6 +151,6 @@
         </section>
     </div>
 
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
 </body>
 </html>

@@ -1,5 +1,55 @@
 // Revelstoke Mountain Dashboard
 
+// Calculate trend from history
+function calculateTrend(history) {
+    if (!history || history.length < 2) return { direction: 'none', change: 0 };
+
+    const amounts = history.map(h => h.amount);
+    const firstVal = amounts[0];
+    const lastVal = amounts[amounts.length - 1];
+    const change = lastVal - firstVal;
+
+    if (change > 0) return { direction: 'up', change, color: '#4ade80' };
+    if (change < 0) return { direction: 'down', change, color: '#f87171' };
+    return { direction: 'none', change: 0, color: '#94a3b8' };
+}
+
+// Generate trend arrow HTML
+function generateTrendArrow(history) {
+    const trend = calculateTrend(history);
+    if (trend.direction === 'none') return '';
+
+    const arrow = trend.direction === 'up' ? '▲' : '▼';
+    const absChange = Math.abs(trend.change);
+
+    return `<span class="trend-arrow" style="color: ${trend.color}" title="Changed ${trend.direction === 'up' ? '+' : ''}${trend.change}cm">${arrow}${absChange}</span>`;
+}
+
+// Generate SVG sparkline from history data
+function generateSparkline(history, width = 50, height = 20) {
+    if (!history || history.length < 2) return '';
+
+    const amounts = history.map(h => h.amount);
+    const min = Math.min(...amounts);
+    const max = Math.max(...amounts);
+    const range = max - min || 1;
+
+    const points = amounts.map((val, i) => {
+        const x = (i / (amounts.length - 1)) * width;
+        const y = height - ((val - min) / range) * (height - 4) - 2;
+        return `${x},${y}`;
+    }).join(' ');
+
+    const trend = calculateTrend(history);
+
+    return `
+        <svg class="sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+            <polyline fill="none" stroke="${trend.color}" stroke-width="1.5" points="${points}" />
+            <circle cx="${width}" cy="${height - ((amounts[amounts.length - 1] - min) / range) * (height - 4) - 2}" r="2" fill="${trend.color}" />
+        </svg>
+    `;
+}
+
 const CONFIG = {
     snowReportApi: '/api/snow-report',
     webcams: {
@@ -118,12 +168,22 @@ function displayForecast(forecast) {
                 : `<div class="forecast-freezing">Freezing level: ${day.freezingLevel}m</div>`;
         }
 
+        // Generate sparkline and trend arrow if history exists
+        const hasHistory = day.history?.length > 1;
+        const trendArrow = hasHistory ? generateTrendArrow(day.history) : '';
+        const sparkline = hasHistory ? `
+            <div class="forecast-sparkline" title="Forecast history: ${day.history.map(h => h.amount + 'cm').join(' → ')}">
+                ${generateSparkline(day.history, 40, 16)}
+            </div>
+        ` : '';
+
         html += `
             <div class="forecast-day ${hasSnow ? 'has-snow' : 'no-snow'}">
                 <div class="forecast-day-content">
                     <span class="forecast-date">${day.day}</span>
-                    <span class="forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm</span>
+                    <span class="forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm ${trendArrow}</span>
                 </div>
+                ${sparkline}
                 ${freezingText}
             </div>
         `;
@@ -156,10 +216,20 @@ function updateVideoForecast(forecast) {
                 : `<div class="video-forecast-freezing">${day.freezingLevel}m</div>`;
         }
 
+        // Generate sparkline and trend arrow if history exists
+        const hasHistory = day.history?.length > 1;
+        const trendArrow = hasHistory ? generateTrendArrow(day.history) : '';
+        const sparkline = hasHistory ? `
+            <div class="video-forecast-sparkline">
+                ${generateSparkline(day.history, 36, 14)}
+            </div>
+        ` : '';
+
         html += `
             <div class="video-forecast-day ${hasSnow ? 'has-snow' : 'no-snow'}">
                 <div class="video-forecast-day-name">${day.day}</div>
-                <div class="video-forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm</div>
+                <div class="video-forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm ${trendArrow}</div>
+                ${sparkline}
                 ${freezingText}
             </div>
         `;

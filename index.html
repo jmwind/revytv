@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revelstoke Mountain Dashboard</title>
-    <link rel="stylesheet" href="styles.css?v=23">
+    <link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
     <!-- Full page loading overlay -->
@@ -37,14 +37,18 @@
     </div>
 
     <div class="video-view">
-        <iframe id="youtube-player"            
-            src="https://www.youtube-nocookie.com/embed/spJ5dqXi6ro?si=Bx7AG1uT-5hXJRKN&autoplay=1&mute=1&loop=1&playlist=spJ5dqXi6ro&controls=0"
-            title="YouTube video player"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen>
-        </iframe>
+        <div id="youtube-player"></div>
+
+        <!-- Video Playlist Selector -->
+        <div class="video-selector" id="video-selector">
+            <button class="video-selector-toggle" id="video-selector-toggle">
+                <span class="video-selector-icon">&#9654;</span>
+                <span class="video-selector-current" id="video-selector-current">Video 1</span>
+            </button>
+            <div class="video-selector-list" id="video-selector-list">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
 
         <div class="video-webcams-left">
             <img id="video-webcam-gnorm" class="video-forecast-webcam" alt="Gnorm">
@@ -151,6 +155,7 @@
         </section>
     </div>
 
-    <script src="app.js?v=13"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="app.js?v=14"></script>
 </body>
 </html>

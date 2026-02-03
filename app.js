@@ -58,11 +58,22 @@ const CONFIG = {
         ripper: 'https://www.revelstokemountainresort.com/uploads/ripper/ripper-medium.jpg',
         pvwk: 'https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_PVWK000010B0'
     },
-    refreshInterval: 600000 // 10 minutes
+    refreshInterval: 600000, // 10 minutes
+    // Video playlist configuration
+    videoPlaylist: [
+        { id: 'spJ5dqXi6ro', title: 'Big mountain' },
+        { id: 'BsbMhTEoQiM', title: 'Famillia Fernie 2010' },
+        { id: 'TPND631Dh-I', title: 'Famillia Spring Break 2010' },
+        { id: 'IRwZN2JvtYc', title: 'Famillia Heli NZ 2013' }
+
+    ]
 };
 
 let refreshTimer = null;
 let isTVMode = false;
+let youtubePlayer = null;
+let currentVideoIndex = 0;
+let isVideoSelectorOpen = false;
 
 const elements = {
     currentTemp: document.getElementById('current-temp'),
@@ -95,7 +106,11 @@ const elements = {
         kpmc: document.getElementById('video-webcam-kpmc'),
         ripper: document.getElementById('video-webcam-ripper'),
         pvwk: document.getElementById('video-webcam-pvwk')
-    }
+    },
+    videoSelector: document.getElementById('video-selector'),
+    videoSelectorToggle: document.getElementById('video-selector-toggle'),
+    videoSelectorCurrent: document.getElementById('video-selector-current'),
+    videoSelectorList: document.getElementById('video-selector-list')
 };
 
 // Hide loading overlay
@@ -286,6 +301,128 @@ function updateTicker() {
     elements.tickerContent.innerHTML = html + html;
 }
 
+// Initialize YouTube Player
+function initYouTubePlayer() {
+    if (!isTVMode || typeof YT === 'undefined') return;
+
+    youtubePlayer = new YT.Player('youtube-player', {
+        height: '100%',
+        width: '100%',
+        videoId: CONFIG.videoPlaylist[currentVideoIndex].id,
+        playerVars: {
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
+            iv_load_policy: 3,
+            origin: window.location.origin
+        },
+        events: {
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange
+        }
+    });
+}
+
+// YouTube Player Ready
+function onPlayerReady(event) {
+    event.target.playVideo();
+    updateVideoSelectorCurrent();
+}
+
+// YouTube Player State Change - auto-advance on video end
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+        playNextVideo();
+    }
+}
+
+// Play specific video by index
+function playVideoByIndex(index) {
+    if (index < 0 || index >= CONFIG.videoPlaylist.length) return;
+
+    currentVideoIndex = index;
+    if (youtubePlayer && youtubePlayer.loadVideoById) {
+        youtubePlayer.loadVideoById(CONFIG.videoPlaylist[index].id);
+    }
+    updateVideoSelectorCurrent();
+    closeVideoSelector();
+}
+
+// Play next video in playlist
+function playNextVideo() {
+    currentVideoIndex = (currentVideoIndex + 1) % CONFIG.videoPlaylist.length;
+    if (youtubePlayer && youtubePlayer.loadVideoById) {
+        youtubePlayer.loadVideoById(CONFIG.videoPlaylist[currentVideoIndex].id);
+    }
+    updateVideoSelectorCurrent();
+}
+
+// Update the current video display in selector
+function updateVideoSelectorCurrent() {
+    if (elements.videoSelectorCurrent) {
+        const video = CONFIG.videoPlaylist[currentVideoIndex];
+        elements.videoSelectorCurrent.textContent = video.title;
+    }
+    // Update active state in list
+    const items = elements.videoSelectorList?.querySelectorAll('.video-selector-item');
+    items?.forEach((item, i) => {
+        item.classList.toggle('active', i === currentVideoIndex);
+    });
+}
+
+// Populate video selector list
+function populateVideoSelector() {
+    if (!elements.videoSelectorList) return;
+
+    elements.videoSelectorList.innerHTML = CONFIG.videoPlaylist.map((video, index) => `
+        <button class="video-selector-item ${index === currentVideoIndex ? 'active' : ''}" data-index="${index}">
+            <span class="video-number">${index + 1}</span>
+            <span class="video-title">${video.title}</span>
+        </button>
+    `).join('');
+
+    // Add click handlers
+    elements.videoSelectorList.querySelectorAll('.video-selector-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const index = parseInt(item.dataset.index, 10);
+            playVideoByIndex(index);
+        });
+    });
+}
+
+// Toggle video selector open/closed
+function toggleVideoSelector() {
+    isVideoSelectorOpen = !isVideoSelectorOpen;
+    elements.videoSelector?.classList.toggle('open', isVideoSelectorOpen);
+}
+
+// Close video selector
+function closeVideoSelector() {
+    isVideoSelectorOpen = false;
+    elements.videoSelector?.classList.remove('open');
+}
+
+// Setup video selector event listeners
+function setupVideoSelector() {
+    if (!elements.videoSelectorToggle) return;
+
+    elements.videoSelectorToggle.addEventListener('click', toggleVideoSelector);
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (isVideoSelectorOpen && !elements.videoSelector?.contains(e.target)) {
+            closeVideoSelector();
+        }
+    });
+
+    populateVideoSelector();
+}
+
 // Refresh all data
 async function refreshAllData() {
     await fetchSnowReport();
@@ -307,12 +444,21 @@ async function init() {
         elements.videoView?.classList.add('active');
         elements.dashboardView?.classList.remove('active');
         elements.tickerContainer?.classList.add('active');
+        setupVideoSelector();
+        // YouTube API will call onYouTubeIframeAPIReady when ready
     } else {
         elements.videoView?.classList.remove('active');
         elements.dashboardView?.classList.add('active');
         elements.tickerContainer?.classList.remove('active');
     }
 }
+
+// YouTube IFrame API callback (must be global)
+window.onYouTubeIframeAPIReady = function() {
+    if (isTVMode) {
+        initYouTubePlayer();
+    }
+};
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

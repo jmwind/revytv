@@ -44,17 +44,17 @@ module.exports = async function handler(req, res) {
     }
 };
 
-// Convert day name to actual date
-function dayNameToDate(dayName, referenceDate = new Date()) {
+// Convert day name to actual date + period suffix for Today/Tonight
+function dayNameToDateKey(dayName, referenceDate = new Date()) {
     const today = new Date(referenceDate);
     today.setHours(0, 0, 0, 0);
 
     if (dayName === 'Today') {
-        return formatDate(today);
+        return { date: formatDate(today), key: `${formatDate(today)}:day` };
     }
 
     if (dayName === 'Tonight') {
-        return formatDate(today); // Same date as today
+        return { date: formatDate(today), key: `${formatDate(today)}:night` };
     }
 
     const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -69,7 +69,7 @@ function dayNameToDate(dayName, referenceDate = new Date()) {
     const targetDate = new Date(today);
     targetDate.setDate(targetDate.getDate() + daysUntil);
 
-    return formatDate(targetDate);
+    return { date: formatDate(targetDate), key: formatDate(targetDate) };
 }
 
 function formatDate(date) {
@@ -81,20 +81,21 @@ async function trackForecastHistory(forecasts, fetchedAt) {
     const updatedForecasts = [];
 
     for (const forecast of forecasts) {
-        const actualDate = dayNameToDate(forecast.day);
-        if (!actualDate) {
+        const dateInfo = dayNameToDateKey(forecast.day);
+        if (!dateInfo) {
             updatedForecasts.push(forecast);
             continue;
         }
 
-        const storageKey = `forecast:${actualDate}`;
+        const storageKey = `forecast:${dateInfo.key}`;
         // Use getWithMock for local dev to generate test sparkline data
-        let record = await storage.getWithMock(storageKey, forecast.amount, actualDate);
+        let record = await storage.getWithMock(storageKey, forecast.amount, dateInfo.key);
 
         if (!record) {
-            // First time seeing this date
+            // First time seeing this date/period
             record = {
-                date: actualDate,
+                date: dateInfo.date,
+                key: dateInfo.key,
                 dayName: forecast.day,
                 history: []
             };
@@ -124,7 +125,7 @@ async function trackForecastHistory(forecasts, fetchedAt) {
         // Add history and date to forecast response
         updatedForecasts.push({
             ...forecast,
-            actualDate: actualDate,
+            actualDate: dateInfo.date,
             history: record.history
         });
     }

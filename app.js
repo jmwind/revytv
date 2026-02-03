@@ -318,8 +318,7 @@ function initYouTubePlayer() {
             modestbranding: 1,
             rel: 0,
             showinfo: 0,
-            iv_load_policy: 3,
-            origin: window.location.origin
+            iv_load_policy: 3
         },
         events: {
             onReady: onPlayerReady,

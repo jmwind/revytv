@@ -37,13 +37,20 @@
     </div>
 
     <div class="video-view">
-        <div id="youtube-player"></div>
+        <iframe id="youtube-player"
+            src="https://www.youtube-nocookie.com/embed/spJ5dqXi6ro?si=Bx7AG1uT-5hXJRKN&autoplay=1&mute=1&loop=1&playlist=spJ5dqXi6ro,dQw4w9WgXcQ,L_jWHffIx5E&controls=0"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+        </iframe>
 
         <!-- Video Playlist Selector -->
         <div class="video-selector" id="video-selector">
             <button class="video-selector-toggle" id="video-selector-toggle">
                 <span class="video-selector-icon">&#9654;</span>
-                <span class="video-selector-current" id="video-selector-current">Video 1</span>
+                <span class="video-selector-current" id="video-selector-current">Now Playing</span>
             </button>
             <div class="video-selector-list" id="video-selector-list">
                 <!-- Populated by JavaScript -->
@@ -155,7 +162,6 @@
         </section>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
 </body>
 </html>

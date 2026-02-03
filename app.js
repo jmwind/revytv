@@ -71,7 +71,6 @@ const CONFIG = {
 
 let refreshTimer = null;
 let isTVMode = false;
-let youtubePlayer = null;
 let currentVideoIndex = 0;
 let isVideoSelectorOpen = false;
 
@@ -110,7 +109,8 @@ const elements = {
     videoSelector: document.getElementById('video-selector'),
     videoSelectorToggle: document.getElementById('video-selector-toggle'),
     videoSelectorCurrent: document.getElementById('video-selector-current'),
-    videoSelectorList: document.getElementById('video-selector-list')
+    videoSelectorList: document.getElementById('video-selector-list'),
+    youtubePlayer: document.getElementById('youtube-player')
 };
 
 // Hide loading overlay
@@ -301,64 +301,26 @@ function updateTicker() {
     elements.tickerContent.innerHTML = html + html;
 }
 
-// Initialize YouTube Player
-function initYouTubePlayer() {
-    if (!isTVMode || typeof YT === 'undefined') return;
-
-    youtubePlayer = new YT.Player('youtube-player', {
-        height: '100%',
-        width: '100%',
-        videoId: CONFIG.videoPlaylist[currentVideoIndex].id,
-        playerVars: {
-            autoplay: 1,
-            mute: 1,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
-            modestbranding: 1,
-            rel: 0,
-            showinfo: 0,
-            iv_load_policy: 3
-        },
-        events: {
-            onReady: onPlayerReady,
-            onStateChange: onPlayerStateChange
-        }
-    });
+// Build YouTube embed URL for playlist starting at given index
+function buildPlaylistUrl(startIndex) {
+    const videoIds = CONFIG.videoPlaylist.map(v => v.id);
+    // Reorder playlist to start at the selected video
+    const reorderedIds = [...videoIds.slice(startIndex), ...videoIds.slice(0, startIndex)];
+    const firstVideoId = reorderedIds[0];
+    const playlistParam = reorderedIds.join(',');
+    return `https://www.youtube-nocookie.com/embed/${firstVideoId}?autoplay=1&mute=1&loop=1&playlist=${playlistParam}&controls=0`;
 }
 
-// YouTube Player Ready
-function onPlayerReady(event) {
-    event.target.playVideo();
-    updateVideoSelectorCurrent();
-}
-
-// YouTube Player State Change - auto-advance on video end
-function onPlayerStateChange(event) {
-    if (event.data === YT.PlayerState.ENDED) {
-        playNextVideo();
-    }
-}
-
-// Play specific video by index
+// Play specific video by index (reloads iframe with reordered playlist)
 function playVideoByIndex(index) {
     if (index < 0 || index >= CONFIG.videoPlaylist.length) return;
 
     currentVideoIndex = index;
-    if (youtubePlayer && youtubePlayer.loadVideoById) {
-        youtubePlayer.loadVideoById(CONFIG.videoPlaylist[index].id);
+    if (elements.youtubePlayer) {
+        elements.youtubePlayer.src = buildPlaylistUrl(index);
     }
     updateVideoSelectorCurrent();
     closeVideoSelector();
-}
-
-// Play next video in playlist
-function playNextVideo() {
-    currentVideoIndex = (currentVideoIndex + 1) % CONFIG.videoPlaylist.length;
-    if (youtubePlayer && youtubePlayer.loadVideoById) {
-        youtubePlayer.loadVideoById(CONFIG.videoPlaylist[currentVideoIndex].id);
-    }
-    updateVideoSelectorCurrent();
 }
 
 // Update the current video display in selector
@@ -420,6 +382,7 @@ function setupVideoSelector() {
     });
 
     populateVideoSelector();
+    updateVideoSelectorCurrent();
 }
 
 // Refresh all data
@@ -444,20 +407,12 @@ async function init() {
         elements.dashboardView?.classList.remove('active');
         elements.tickerContainer?.classList.add('active');
         setupVideoSelector();
-        // YouTube API will call onYouTubeIframeAPIReady when ready
     } else {
         elements.videoView?.classList.remove('active');
         elements.dashboardView?.classList.add('active');
         elements.tickerContainer?.classList.remove('active');
     }
 }
-
-// YouTube IFrame API callback (must be global)
-window.onYouTubeIframeAPIReady = function() {
-    if (isTVMode) {
-        initYouTubePlayer();
-    }
-};
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

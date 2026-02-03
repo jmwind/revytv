@@ -1,12 +1,23 @@
-// Storage abstraction - Vercel KV in production, JSON file locally
+// Storage abstraction - Upstash Redis in production, JSON file locally
 const fs = require('fs');
 const path = require('path');
 
 const LOCAL_STORAGE_PATH = path.join(process.cwd(), 'data', 'forecast-history.json');
 
+// Lazy-load Redis client
+let redis = null;
+function getRedis() {
+    if (!redis && useUpstash()) {
+        const { Redis } = require('@upstash/redis');
+        redis = Redis.fromEnv();
+    }
+    return redis;
+}
+
 // Check if we're using Upstash Redis (environment variables set)
 function useUpstash() {
-    return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+    const redis = getRedis();
+    return redis !== null;
 }
 
 // Generate mock history for local testing
@@ -52,13 +63,29 @@ function ensureLocalStorage() {
     }
 }
 
-function localGet(key, currentAmount = null) {
+function localGet(key) {
     ensureLocalStorage();
     try {
         const data = JSON.parse(fs.readFileSync(LOCAL_STORAGE_PATH, 'utf8'));
         return data[key] || null;
     } catch (e) {
         return null;
+    }
+}
+
+function localSet(key, value) {
+    ensureLocalStorage();
+    const data = JSON.parse(fs.readFileSync(LOCAL_STORAGE_PATH, 'utf8'));
+    data[key] = value;
+    fs.writeFileSync(LOCAL_STORAGE_PATH, JSON.stringify(data, null, 2));
+}
+
+function localGetAll() {
+    ensureLocalStorage();
+    try {
+        return JSON.parse(fs.readFileSync(LOCAL_STORAGE_PATH, 'utf8'));
+    } catch (e) {
+        return {};
     }
 }
 
@@ -91,58 +118,28 @@ function localGetWithMock(key, currentAmount, date) {
             history: generateMockHistory(currentAmount, date),
             _isMock: true
         };
-        // Don't persist mock data - just return it for display
         return mockRecord;
     }
 
     return existing;
 }
 
-function localSet(key, value) {
-    ensureLocalStorage();
-    const data = JSON.parse(fs.readFileSync(LOCAL_STORAGE_PATH, 'utf8'));
-    data[key] = value;
-    fs.writeFileSync(LOCAL_STORAGE_PATH, JSON.stringify(data, null, 2));
-}
-
-function localGetAll() {
-    ensureLocalStorage();
-    try {
-        return JSON.parse(fs.readFileSync(LOCAL_STORAGE_PATH, 'utf8'));
-    } catch (e) {
-        return {};
-    }
-}
-
-// Upstash Redis storage
+// Upstash Redis storage using SDK
 async function redisGet(key) {
-    const response = await fetch(`${process.env.KV_REST_API_URL}/get/${key}`, {
-        headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
-    });
-    const data = await response.json();
-    return data.result ? JSON.parse(data.result) : null;
+    const client = getRedis();
+    const result = await client.get(key);
+    return result || null;
 }
 
 async function redisSet(key, value) {
-    await fetch(`${process.env.KV_REST_API_URL}/set/${key}`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(JSON.stringify(value))
-    });
+    const client = getRedis();
+    await client.set(key, value);
 }
 
 async function redisGetByPrefix(prefix) {
-    // Get all keys matching prefix
-    const response = await fetch(`${process.env.KV_REST_API_URL}/keys/${prefix}*`, {
-        headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
-    });
-    const data = await response.json();
-    const keys = data.result || [];
+    const client = getRedis();
+    const keys = await client.keys(`${prefix}*`);
 
-    // Fetch all values
     const results = {};
     for (const key of keys) {
         results[key] = await redisGet(key);

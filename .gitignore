@@ -2,3 +2,4 @@
 .env*.local
 data/
 dev-server.js
+node_modules/

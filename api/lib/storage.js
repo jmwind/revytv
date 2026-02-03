@@ -1,23 +1,22 @@
 // Storage abstraction - Upstash Redis in production, JSON file locally
 const fs = require('fs');
 const path = require('path');
+const { Redis } = require('@upstash/redis');
 
 const LOCAL_STORAGE_PATH = path.join(process.cwd(), 'data', 'forecast-history.json');
+
+// Check if Upstash env vars are set (SDK looks for these)
+function useUpstash() {
+    return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+}
 
 // Lazy-load Redis client
 let redis = null;
 function getRedis() {
-    if (!redis && useUpstash()) {
-        const { Redis } = require('@upstash/redis');
+    if (!redis && useUpstash()) {        
         redis = Redis.fromEnv();
     }
     return redis;
-}
-
-// Check if we're using Upstash Redis (environment variables set)
-function useUpstash() {
-    const redis = getRedis();
-    return redis !== null;
 }
 
 // Generate mock history for local testing

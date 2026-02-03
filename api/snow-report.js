@@ -38,7 +38,8 @@ module.exports = async function handler(req, res) {
         console.error('Error fetching snow report:', error);
         return res.status(500).json({
             error: 'Failed to fetch snow report',
-            message: error.message
+            message: error.message,
+            stack: error.stack
         });
     }
 };

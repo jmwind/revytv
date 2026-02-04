@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revelstoke Mountain Resort - Forecast History Calendar">
+    <title>Forecast History | Revelstoke Mountain</title>
+    <link rel="stylesheet" href="styles.css?v=27">
+</head>
+<body class="calendar-page">
+    <div class="calendar-container">
+        <header class="calendar-header">
+            <a href="/" class="back-link">Home</a>
+            <div class="year-nav">
+                <button id="prev-year" class="year-btn" title="Previous Year">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+                <h1 id="current-year" class="year-display">2026</h1>
+                <button id="next-year" class="year-btn" title="Next Year">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="calendar-legend">
+                <span class="legend-item"><span class="legend-dot up"></span>Increased</span>
+                <span class="legend-item"><span class="legend-dot down"></span>Decreased</span>
+                <span class="legend-item"><span class="legend-dot unchanged"></span>No change</span>
+            </div>
+        </header>
+
+        <div id="calendar-grid" class="calendar-grid">
+            <!-- Months will be rendered here by JavaScript -->
+        </div>
+
+        <div id="loading-indicator" class="calendar-loading">
+            <div class="loading-snowflakes">
+                <span>❄</span><span>❄</span><span>❄</span>
+            </div>
+            <div class="loading-text"></div>
+        </div>
+    </div>
+
+    <script src="calendar.js?v=5"></script>
+</body>
+</html>

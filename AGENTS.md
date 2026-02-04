@@ -1,65 +1,109 @@
 # AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+Context for AI agents working on this codebase.
 
 ## Project Overview
 
-A lightweight dashboard for monitoring real-time conditions at Revelstoke Mountain Resort. Displays weather, snow reports, forecasts, and live webcam feeds. Built with vanilla HTML/CSS/JavaScript - no build tools or dependencies.
+Real-time dashboard for Revelstoke Mountain Resort. Shows weather, snow reports, forecasts with historical tracking, and live webcams.
 
-## Running the Project
+**Stack:** Vanilla HTML/CSS/JS frontend + Vercel serverless functions + Upstash Redis
 
-Serve files with any HTTP server (required for CORS):
+## Running Locally
 
 ```bash
-# Python 3
-python -m http.server 8000
-
-# Node.js (if http-server installed)
-http-server -p 8000
-
-# PHP
-php -S localhost:8000
+vercel dev
 ```
 
-Then open `http://localhost:8000`. Add `?tv` query param for TV mode (`http://localhost:8000?tv`).
+Opens at http://localhost:3000. Vercel CLI pulls environment variables (Upstash credentials) automatically.
+
+## File Structure
+
+```
+├── index.html           # Main dashboard (two modes: default + TV)
+├── calendar.html        # Forecast history calendar
+├── app.js               # Dashboard logic, DOM updates, sparklines
+├── calendar.js          # Calendar rendering, year navigation
+├── styles.css           # All styles (dark theme, responsive)
+├── api/
+│   ├── snow-report.js   # Main API - fetches resort data, tracks history
+│   ├── calendar-data.js # Returns all historical forecast data
+│   └── lib/
+│       └── storage.js   # Upstash Redis abstraction
+└── data/
+    └── forecast-history.json  # Local fallback (not used with Upstash)
+```
 
 ## Architecture
 
-### File Structure
-- `index.html` - Two view modes: `.dashboard-view` (default) and `.video-view` (TV mode with YouTube embed + ticker)
-- `app.js` - All application logic in a single file
-- `styles.css` - Dark theme with responsive breakpoints for mobile through 4K TVs
-
 ### Data Flow
-1. `fetchSnowReport()` fetches HTML from revelstokemountainresort.com via CORS proxies
-2. `parseSnowReportHTML()` extracts weather/snow data using regex patterns on the raw HTML
-3. `extractForecastData()` parses forecast by finding day headings and "Snow: X cm" patterns
-4. `updateWebcams()` loads webcam images with cache-busting timestamps
-5. Auto-refresh runs every 10 minutes via `CONFIG.refreshInterval`
 
-### CORS Proxy Chain
-The app tries multiple CORS proxies in order (in `CONFIG.corsProxies`) since free proxies can be unreliable. If direct fetch fails, it tries each proxy with retries before moving to the next.
+1. **Frontend** calls `/api/snow-report`
+2. **snow-report.js** fetches HTML from revelstokemountainresort.com
+3. Parses weather/snow/forecast data via regex
+4. Stores forecast history in **Upstash Redis** (tracks changes over time)
+5. Returns JSON with current data + history arrays
+6. **Frontend** renders data with sparklines showing forecast trends
+
+### API Endpoints
+
+- `GET /api/snow-report` - Current conditions + forecast with history
+- `GET /api/calendar-data?year=2026` - All historical data for calendar view
 
 ### View Modes
-- **Dashboard** (default): Grid of webcams, weather overlay, forecast cards, snow stats
-- **TV Mode** (`?tv`): YouTube video background with webcams on sides, forecast overlay, scrolling ticker at bottom
+
+- `/` - Dashboard with webcams, weather, forecast cards, snow stats
+- `/?tv` - TV mode: YouTube background, webcams on sides, ticker at bottom
+- `/calendar.html` - Year calendar showing forecast change history
 
 ## Key Patterns
 
 ### DOM Elements
-All DOM references are cached in the `elements` object at startup. When adding new UI elements, add them to this object.
 
-### Regex-Based Parsing
-Weather and snow data is extracted via regex from the raw HTML text (not DOM traversal). Patterns are in `parseSnowReportHTML()`. If the resort changes their HTML structure, these patterns may need updating.
+All DOM refs cached in `elements` object in app.js. Add new elements there.
 
-### Cache-Busting
-Webcam images append `?t=${timestamp}` to URLs to ensure fresh images on each refresh.
+### Sparklines
+
+Generated via `generateSparkline(history, width, height)` in app.js. Returns SVG string. Color based on delta (green=up, red=down, blue=unchanged).
+
+### Forecast History
+
+Each forecast day stores an array of historical predictions:
+```javascript
+{
+  date: "2026-02-04",
+  history: [
+    { firstSeen: "2026-01-28T...", amount: 5, freezingLevel: 1400 },
+    { firstSeen: "2026-01-29T...", amount: 8, freezingLevel: 1200 },
+    // ... more entries as forecast changes
+  ]
+}
+```
+
+Delta = last amount - first amount (how much the forecast changed).
+
+### Storage Keys
+
+Redis keys follow pattern: `forecast:YYYY-MM-DD` or `forecast:YYYY-MM-DD:night`
+
+### Regex Parsing
+
+Weather/snow data extracted via regex in `parseSnowReport()` and `extractForecast()` in snow-report.js. If resort changes HTML structure, these patterns need updating.
+
+### Cache Busting
+
+- Webcam images: append `?t=${Date.now()}`
+- CSS/JS files: version query params in HTML (`styles.css?v=28`)
+
+## Styling Conventions
+
+- Dark theme: `#1a1a1a` background, `#2d2d2d` cards, `#4a9eff` accent
+- Colors: green `#4ade80` (up), red `#f87171` (down), blue `#4a9eff` (unchanged)
+- Responsive breakpoints at 768px, 1024px, 1920px, 2560px
 
 ## Configuration
 
-All configurable values are in the `CONFIG` object at the top of `app.js`:
-- `snowReportUrl` - Source URL for weather/snow data
-- `corsProxies` - Array of CORS proxy endpoints to try
-- `fetchTimeout` - Request timeout in ms
-- `webcams` - Object mapping webcam IDs to their URLs
-- `refreshInterval` - Auto-refresh interval in ms (default: 600000 = 10 min)
+In `app.js` CONFIG object:
+- `snowReportApi` - API endpoint
+- `webcams` - Webcam URL mapping
+- `refreshInterval` - Auto-refresh (default 10 min)
+- `videoPlaylist` - YouTube videos for TV mode

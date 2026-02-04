@@ -188,7 +188,7 @@ function displayForecast(forecast) {
         const trendArrow = hasHistory ? generateTrendArrow(day.history) : '';
         const sparkline = hasHistory ? `
             <div class="forecast-sparkline" title="Forecast history: ${day.history.map(h => h.amount + 'cm').join(' → ')}">
-                ${generateSparkline(day.history, 40, 16)}
+                ${generateSparkline(day.history, 100, 20)}
             </div>
         ` : '';
 

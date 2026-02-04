@@ -43,10 +43,99 @@ const MONTHS = [
     'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// Render season total graph
+function renderSnowfallChart(year) {
+    const container = document.getElementById('chart-container');
+    const totalEl = document.getElementById('chart-total');
+    const chartEl = document.getElementById('snowfall-chart');
+
+    // Convert snowfall data to sorted array
+    const dataPoints = Object.values(snowfallData)
+        .filter(d => d.date.startsWith(String(year)))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (dataPoints.length === 0) {
+        chartEl.style.display = 'none';
+        return;
+    }
+
+    chartEl.style.display = 'block';
+
+    // Show latest total
+    const latestTotal = dataPoints[dataPoints.length - 1].seasonTotal;
+    totalEl.textContent = `${latestTotal} cm`;
+
+    // Chart dimensions
+    const width = container.clientWidth || 800;
+    const height = 120;
+    const padding = { top: 10, right: 15, bottom: 25, left: 45 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    // Calculate scales
+    const minDate = new Date(dataPoints[0].date);
+    const maxDate = new Date(dataPoints[dataPoints.length - 1].date);
+    const dateRange = maxDate - minDate || 1;
+
+    const maxVal = Math.max(...dataPoints.map(d => d.seasonTotal));
+    const minVal = 0;
+    const valRange = maxVal - minVal || 1;
+
+    // Generate path points
+    const points = dataPoints.map(d => {
+        const date = new Date(d.date);
+        const x = padding.left + ((date - minDate) / dateRange) * chartWidth;
+        const y = padding.top + chartHeight - ((d.seasonTotal - minVal) / valRange) * chartHeight;
+        return { x, y, date: d.date, value: d.seasonTotal };
+    });
+
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+    // Generate area fill
+    const areaD = pathD + ` L ${points[points.length - 1].x} ${padding.top + chartHeight} L ${points[0].x} ${padding.top + chartHeight} Z`;
+
+    // Generate Y axis labels
+    const yLabels = [0, Math.round(maxVal / 2), maxVal].map(val => {
+        const y = padding.top + chartHeight - ((val - minVal) / valRange) * chartHeight;
+        return `<text x="${padding.left - 8}" y="${y + 4}" class="chart-label">${val}</text>`;
+    }).join('');
+
+    // Generate month labels on X axis
+    const monthLabels = [];
+    const seenMonths = new Set();
+    points.forEach(p => {
+        const month = parseInt(p.date.split('-')[1]) - 1;
+        if (!seenMonths.has(month)) {
+            seenMonths.add(month);
+            monthLabels.push(`<text x="${p.x}" y="${height - 5}" class="chart-label">${SHORT_MONTHS[month]}</text>`);
+        }
+    });
+
+    // Render SVG
+    container.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4ade80;stop-opacity:0.3"/>
+                    <stop offset="100%" style="stop-color:#4ade80;stop-opacity:0.05"/>
+                </linearGradient>
+            </defs>
+            <path d="${areaD}" fill="url(#areaGradient)" />
+            <path d="${pathD}" fill="none" stroke="#4ade80" stroke-width="2" />
+            ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#4ade80" class="chart-point"><title>${p.date}: ${p.value}cm</title></circle>`).join('')}
+            ${yLabels}
+            ${monthLabels.join('')}
+        </svg>
+    `;
+}
 
 let currentYear = new Date().getFullYear();
 let calendarData = {};
+let snowfallData = {};
 
 // Fetch calendar data from API
 async function fetchCalendarData(year) {
@@ -54,9 +143,11 @@ async function fetchCalendarData(year) {
         const response = await fetch(`/api/calendar-data?year=${year}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
+        snowfallData = result.snowfall || {};
         return result.data || {};
     } catch (error) {
         console.error('Error fetching calendar data:', error);
+        snowfallData = {};
         return {};
     }
 }
@@ -112,11 +203,9 @@ function formatDelta(delta) {
 // Render a single day cell
 function renderDayCell(year, month, day, data) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dayData = data[dateStr];
-    const nightData = data[`${dateStr}:night`];
 
-    // Combine day and night data - use day data primarily
-    const effectiveData = dayData || nightData;
+    // Data is now merged by date in the API
+    const effectiveData = data[dateStr];
     const flatSparkline = generateMiniSparkline(null);
 
     if (!effectiveData || !effectiveData.history || effectiveData.history.length === 0) {
@@ -185,12 +274,12 @@ function renderMonth(year, month, data) {
     `;
 }
 
-// Check if a month has any data
+// Check if a month has any data (forecast or snowfall)
 function monthHasData(year, month, data) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        if (data[dateStr] || data[`${dateStr}:night`]) {
+        if (data[dateStr] || snowfallData[dateStr]) {
             return true;
         }
     }
@@ -211,6 +300,9 @@ function isMonthInFuture(year, month) {
 // Render full year
 function renderYear(year, data) {
     const grid = document.getElementById('calendar-grid');
+
+    // Render snowfall chart
+    renderSnowfallChart(year);
 
     let html = '';
     for (let month = 0; month < 12; month++) {

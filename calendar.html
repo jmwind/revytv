@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Revelstoke Mountain Resort - Forecast History Calendar">
     <title>Forecast History | Revelstoke Mountain</title>
-    <link rel="stylesheet" href="styles.css?v=27">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="styles.css?v=30">
 </head>
 <body class="calendar-page">
     <div class="calendar-container">
@@ -25,11 +26,21 @@
                 </button>
             </div>
             <div class="calendar-legend">
-                <span class="legend-item"><span class="legend-dot up"></span>Increased</span>
-                <span class="legend-item"><span class="legend-dot down"></span>Decreased</span>
+                <span class="legend-item"><span class="legend-dot up"></span>Forecast up</span>
+                <span class="legend-item"><span class="legend-dot down"></span>Forecast down</span>
                 <span class="legend-item"><span class="legend-dot unchanged"></span>No change</span>
             </div>
         </header>
+
+        <div id="snowfall-chart" class="snowfall-chart">
+            <div class="chart-header">
+                <span class="chart-title">Season Total</span>
+                <span id="chart-total" class="chart-total"></span>
+            </div>
+            <div id="chart-container" class="chart-container">
+                <!-- SVG graph rendered here -->
+            </div>
+        </div>
 
         <div id="calendar-grid" class="calendar-grid">
             <!-- Months will be rendered here by JavaScript -->
@@ -43,6 +54,6 @@
         </div>
     </div>
 
-    <script src="calendar.js?v=5"></script>
+    <script src="calendar.js?v=9"></script>
 </body>
 </html>

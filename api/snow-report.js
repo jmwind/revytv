@@ -28,6 +28,11 @@ module.exports = async function handler(req, res) {
         // Convert day names to dates and track history
         data.forecast = await trackForecastHistory(data.forecast, fetchedAt);
 
+        // Store daily season total for historical tracking
+        if (data.snow.seasonTotal) {
+            await storeSeasonTotal(data.snow.seasonTotal, fetchedAt);
+        }
+
         data.fetchedAt = fetchedAt;
         data.source = SNOW_REPORT_URL;
         data.storageMode = storage.useUpstash() ? 'upstash-redis' : 'local-json';
@@ -76,6 +81,24 @@ function formatDate(date) {
     return date.toISOString().split('T')[0]; // YYYY-MM-DD
 }
 
+// Store daily season total (once per day)
+async function storeSeasonTotal(seasonTotal, fetchedAt) {
+    const today = new Date(fetchedAt).toISOString().split('T')[0];
+    const storageKey = `snowfall:${today}`;
+
+    // Check if we already stored today's value
+    const existing = await storage.get(storageKey);
+    if (existing) {
+        return; // Already recorded today
+    }
+
+    await storage.set(storageKey, {
+        date: today,
+        seasonTotal: seasonTotal,
+        recordedAt: fetchedAt
+    });
+}
+
 // Track forecast history - only store changes
 async function trackForecastHistory(forecasts, fetchedAt) {
     const updatedForecasts = [];
@@ -122,15 +145,41 @@ async function trackForecastHistory(forecasts, fetchedAt) {
             await storage.set(storageKey, record);
         }
 
-        // Add history and date to forecast response
+        // Fetch all related records for this date and merge histories
+        const mergedHistory = await getMergedHistoryForDate(dateInfo.date);
+
+        // Add merged history and date to forecast response
         updatedForecasts.push({
             ...forecast,
             actualDate: dateInfo.date,
-            history: record.history
+            history: mergedHistory
         });
     }
 
     return updatedForecasts;
+}
+
+// Fetch and merge all history records for a date (plain, :day, :night)
+async function getMergedHistoryForDate(dateStr) {
+    const keys = [
+        `forecast:${dateStr}`,
+        `forecast:${dateStr}:day`,
+        `forecast:${dateStr}:night`
+    ];
+
+    const allHistory = [];
+
+    for (const key of keys) {
+        const record = await storage.get(key);
+        if (record && record.history && record.history.length > 0) {
+            allHistory.push(...record.history);
+        }
+    }
+
+    // Sort by firstSeen timestamp
+    allHistory.sort((a, b) => new Date(a.firstSeen) - new Date(b.firstSeen));
+
+    return allHistory;
 }
 
 function parseSnowReport(html) {

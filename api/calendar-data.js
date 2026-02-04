@@ -18,13 +18,13 @@ module.exports = async function handler(req, res) {
         // Get all forecast records from storage
         const allRecords = await storage.getAllByPrefix('forecast:');
 
-        // Filter and process for requested year
-        const yearData = {};
+        // Group records by date (merging plain, :day, :night)
+        const dateGroups = {};
 
         for (const [key, record] of Object.entries(allRecords)) {
             if (!record || !record.history || record.history.length === 0) continue;
 
-            // Extract date from key (format: forecast:YYYY-MM-DD or forecast:YYYY-MM-DD:night)
+            // Extract date from key (format: forecast:YYYY-MM-DD or forecast:YYYY-MM-DD:day/night)
             const dateMatch = key.match(/forecast:(\d{4}-\d{2}-\d{2})/);
             if (!dateMatch) continue;
 
@@ -33,31 +33,71 @@ module.exports = async function handler(req, res) {
 
             if (recordYear !== year) continue;
 
-            // Check if this is a night entry
-            const isNight = key.includes(':night');
-            const displayKey = isNight ? `${dateStr}:night` : dateStr;
+            // Initialize group for this date
+            if (!dateGroups[dateStr]) {
+                dateGroups[dateStr] = { plain: null, day: null, night: null };
+            }
 
-            // Calculate delta (last - first amount)
-            const history = record.history;
-            const firstAmount = history[0].amount;
-            const lastAmount = history[history.length - 1].amount;
+            // Categorize by suffix
+            if (key.includes(':day')) {
+                dateGroups[dateStr].day = record.history;
+            } else if (key.includes(':night')) {
+                dateGroups[dateStr].night = record.history;
+            } else {
+                dateGroups[dateStr].plain = record.history;
+            }
+        }
+
+        // Merge histories for each date and calculate stats
+        const yearData = {};
+
+        for (const [dateStr, group] of Object.entries(dateGroups)) {
+            // Merge histories in order: plain (future forecasts) -> day -> night
+            const mergedHistory = [
+                ...(group.plain || []),
+                ...(group.day || []),
+                ...(group.night || [])
+            ].sort((a, b) => new Date(a.firstSeen) - new Date(b.firstSeen));
+
+            if (mergedHistory.length === 0) continue;
+
+            const firstAmount = mergedHistory[0].amount;
+            const lastAmount = mergedHistory[mergedHistory.length - 1].amount;
             const delta = lastAmount - firstAmount;
 
-            yearData[displayKey] = {
+            yearData[dateStr] = {
                 date: dateStr,
-                isNight: isNight,
-                history: history,
+                history: mergedHistory,
                 firstAmount: firstAmount,
                 lastAmount: lastAmount,
                 delta: delta,
-                historyCount: history.length
+                historyCount: mergedHistory.length
+            };
+        }
+
+        // Get snowfall history for the year
+        const allSnowfall = await storage.getAllByPrefix('snowfall:');
+        const snowfallData = {};
+
+        for (const [key, record] of Object.entries(allSnowfall)) {
+            if (!record || !record.date) continue;
+
+            const recordYear = parseInt(record.date.substring(0, 4));
+            if (recordYear !== year) continue;
+
+            snowfallData[record.date] = {
+                date: record.date,
+                seasonTotal: record.seasonTotal,
+                recordedAt: record.recordedAt
             };
         }
 
         return res.status(200).json({
             year: year,
             data: yearData,
+            snowfall: snowfallData,
             count: Object.keys(yearData).length,
+            snowfallCount: Object.keys(snowfallData).length,
             fetchedAt: new Date().toISOString(),
             storageMode: storage.useUpstash() ? 'upstash-redis' : 'local-json'
         });

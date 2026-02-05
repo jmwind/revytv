@@ -6,7 +6,7 @@
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revelstoke Mountain Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=28">
+    <link rel="stylesheet" href="styles.css?v=37">
 </head>
 <body>
     <!-- Full page loading overlay -->
@@ -87,55 +87,12 @@
     </div>
 
     <div class="container dashboard-view">
-        <section class="webcams">
-            <a href="/calendar.html" class="calendar-btn" title="Forecast History Calendar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 3v18h18"/>
-                    <path d="M7 16l4-4 4 4 5-6"/>
-                </svg>
-            </a>
-            <div class="webcam-grid">
-                <div class="webcam-item">
-                    <div class="webcam-loading"></div>
-                    <img id="webcam-gnorm" src="" alt="Gnorm" class="webcam-img">
-                </div>
-                <div class="webcam-item">
-                    <div class="webcam-loading"></div>
-                    <img id="webcam-kpmc" src="" alt="KPMC" class="webcam-img">
-                </div>
-                <div class="webcam-item">
-                    <div class="webcam-loading"></div>
-                    <img id="webcam-ripper" src="" alt="Ripper" class="webcam-img">
-                </div>
-                <div class="webcam-item">
-                    <div class="webcam-loading"></div>
-                    <img id="webcam-pvwk" src="" alt="PVWK" class="webcam-img">
-                </div>
-            </div>
-
-            <div class="weather-overlay">
-                <div class="weather-content">
-                    <div class="weather-main">
-                        <div class="temp-condition">
-                            <span id="current-temp" class="temp-value">--</span>°C
-                            <span id="weather-condition" class="condition-inline">--</span>
-                        </div>
-                        <div class="weather-details-inline">
-                            <span class="detail-inline">Wind: <strong id="wind-speed">--</strong> <strong id="wind-direction">--</strong></span>
-                            <span class="detail-inline">Subpeak: <strong id="subpeak-temp">--</strong></span>
-                            <span class="detail-inline">Ripper: <strong id="ripper-temp">--</strong></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="forecast-section">
-            <div class="card forecast-card">
-                <div id="forecast-content" class="forecast-content">
-                </div>
-            </div>
-        </section>
+        <a href="/calendar.html" class="calendar-btn" title="Forecast History Calendar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18"/>
+                <path d="M7 16l4-4 4 4 5-6"/>
+            </svg>
+        </a>
 
         <section class="data-cards">
             <div class="card snow-card">
@@ -173,8 +130,52 @@
                 </div>
             </div>
         </section>
+
+        <section class="forecast-section">
+            <div class="card forecast-card">
+                <div id="forecast-content" class="forecast-content">
+                </div>
+            </div>
+        </section>
+
+        <section class="webcams">
+            <div class="webcam-grid">
+                <div class="webcam-item">
+                    <div class="webcam-loading"></div>
+                    <img id="webcam-gnorm" src="" alt="Gnorm" class="webcam-img">
+                </div>
+                <div class="webcam-item">
+                    <div class="webcam-loading"></div>
+                    <img id="webcam-kpmc" src="" alt="KPMC" class="webcam-img">
+                </div>
+                <div class="webcam-item">
+                    <div class="webcam-loading"></div>
+                    <img id="webcam-ripper" src="" alt="Ripper" class="webcam-img">
+                </div>
+                <div class="webcam-item">
+                    <div class="webcam-loading"></div>
+                    <img id="webcam-pvwk" src="" alt="PVWK" class="webcam-img">
+                </div>
+            </div>
+
+            <div class="weather-overlay">
+                <div class="weather-content">
+                    <div class="weather-main">
+                        <div class="temp-condition">
+                            <span id="current-temp" class="temp-value">--</span>°C
+                            <span id="weather-condition" class="condition-inline">--</span>
+                        </div>
+                        <div class="weather-details-inline">
+                            <span class="detail-inline">Wind: <strong id="wind-speed">--</strong> <strong id="wind-direction">--</strong></span>
+                            <span class="detail-inline">Subpeak: <strong id="subpeak-temp">--</strong></span>
+                            <span class="detail-inline">Ripper: <strong id="ripper-temp">--</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <script src="app.js?v=16"></script>
+    <script src="app.js?v=17"></script>
 </body>
 </html>

@@ -170,7 +170,7 @@ function displayForecast(forecast) {
         return;
     }
 
-    let html = '<div class="elevation-ref-line">Summit 2225m • Ripper 1950m • Top Gon 1713m • Mid Gon 800m</div>';
+    let html = '';
 
     forecast.forEach(day => {
         const amount = day.amount || 0;
@@ -180,7 +180,7 @@ function displayForecast(forecast) {
         if (day.freezingLevel != null) {
             freezingText = day.freezingLevel === 'valley bottom'
                 ? '<div class="forecast-freezing">Freezing at valley bottom</div>'
-                : `<div class="forecast-freezing">Freezing level: ${day.freezingLevel}m</div>`;
+                : `<div class="forecast-freezing">${day.freezingLevel}m</div>`;
         }
 
         // Generate sparkline and trend arrow if history exists
@@ -203,6 +203,8 @@ function displayForecast(forecast) {
             </div>
         `;
     });
+
+    html += '<div class="elevation-ref-line">Summit 2225m • Ripper 1950m • Top Gon 1713m • Mid Gon 800m</div>';
 
     elements.forecastContent.innerHTML = html;
 }

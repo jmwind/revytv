@@ -4,6 +4,8 @@
 const storage = require('./lib/storage.js');
 
 const SNOW_REPORT_URL = 'https://www.revelstokemountainresort.com/mountain/conditions/snow-report/';
+const CACHE_KEY = 'snow-report:cache';
+const CACHE_TTL_SECONDS = 600; // 10 minutes
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,6 +17,13 @@ module.exports = async function handler(req, res) {
     }
 
     try {
+        // Check cache first
+        const cached = await storage.get(CACHE_KEY);
+        if (cached) {
+            cached.fromCache = true;
+            return res.status(200).json(cached);
+        }
+
         const response = await fetch(SNOW_REPORT_URL, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RevyTV/1.0)' }
         });
@@ -36,6 +45,9 @@ module.exports = async function handler(req, res) {
         data.fetchedAt = fetchedAt;
         data.source = SNOW_REPORT_URL;
         data.storageMode = storage.useUpstash() ? 'upstash-redis' : 'local-json';
+
+        // Cache the response for 10 minutes
+        await storage.set(CACHE_KEY, data, CACHE_TTL_SECONDS);
 
         return res.status(200).json(data);
 

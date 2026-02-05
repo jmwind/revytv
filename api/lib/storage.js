@@ -130,9 +130,13 @@ async function redisGet(key) {
     return result || null;
 }
 
-async function redisSet(key, value) {
+async function redisSet(key, value, ttlSeconds = null) {
     const client = getRedis();
-    await client.set(key, value);
+    if (ttlSeconds) {
+        await client.set(key, value, { ex: ttlSeconds });
+    } else {
+        await client.set(key, value);
+    }
 }
 
 async function redisGetByPrefix(prefix) {
@@ -154,9 +158,9 @@ async function get(key) {
     return localGet(key);
 }
 
-async function set(key, value) {
+async function set(key, value, ttlSeconds = null) {
     if (useUpstash()) {
-        return await redisSet(key, value);
+        return await redisSet(key, value, ttlSeconds);
     }
     return localSet(key, value);
 }

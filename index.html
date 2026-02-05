@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
-    <title>Revelstoke Mountain Dashboard</title>
+    <title>Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=37">
+    <link rel="stylesheet" href="styles.css?v=38">
 </head>
 <body>
     <!-- Full page loading overlay -->
@@ -87,12 +87,29 @@
     </div>
 
     <div class="container dashboard-view">
-        <a href="/calendar.html" class="calendar-btn" title="Forecast History Calendar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 3v18h18"/>
-                <path d="M7 16l4-4 4 4 5-6"/>
-            </svg>
-        </a>
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-brand">
+                <svg class="nav-logo" viewBox="0 0 100 100">
+                    <g stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round">
+                        <line x1="50" y1="10" x2="50" y2="90" />
+                        <line x1="10" y1="50" x2="90" y2="50" />
+                        <line x1="21" y1="21" x2="79" y2="79" />
+                        <line x1="79" y1="21" x2="21" y2="79" />
+                        <line x1="50" y1="20" x2="40" y2="30" />
+                        <line x1="50" y1="20" x2="60" y2="30" />
+                        <line x1="50" y1="80" x2="40" y2="70" />
+                        <line x1="50" y1="80" x2="60" y2="70" />
+                    </g>
+                </svg>
+                <span class="nav-title">Revy snow for nerds</span>
+            </div>
+            <div class="nav-menu">
+                <a href="?tv" class="nav-link">TV Mode</a>
+                <a href="/calendar.html" class="nav-link">Yearly Stats</a>
+                <a href="/about.html" class="nav-link">About</a>
+            </div>
+        </nav>
 
         <section class="data-cards">
             <div class="card snow-card">

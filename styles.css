@@ -555,6 +555,13 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.card.snow-card,
+.card.forecast-card {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 6px;
+}
+
 /* Weather Card */
 .weather-content {
     display: flex;
@@ -816,6 +823,28 @@ body {
     .container {
         height: auto;
         min-height: 100vh;
+    }
+
+    .top-nav {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .nav-brand {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .nav-menu {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-link {
+        padding: 8px 14px;
+        font-size: 0.9rem;
     }
 
     .webcams {
@@ -1133,6 +1162,59 @@ body {
     margin-top: 10px;
 }
 
+/* Top Navigation Bar */
+.top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 15px;
+    background: #2d2d2d;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-logo {
+    width: 32px;
+    height: 32px;
+    color: #4a9eff;
+}
+
+.nav-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    letter-spacing: 0.5px;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-link {
+    padding: 6px 12px;
+    background: #252525;
+    border-radius: 5px;
+    color: #4a9eff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background: #2a3f5f;
+    color: #ffffff;
+}
+
 /* Calendar Button */
 .calendar-btn {
     position: absolute;
@@ -1195,30 +1277,11 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
-    padding: 15px 20px;
+    padding: 12px 20px;
     background: #2d2d2d;
     border-radius: 8px;
     flex-wrap: wrap;
     gap: 15px;
-}
-
-.back-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 16px;
-    background: #252525;
-    border-radius: 6px;
-    color: #4a9eff;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.back-link:hover {
-    background: #2a3f5f;
-    color: #ffffff;
 }
 
 .year-nav {
@@ -1559,11 +1622,6 @@ body {
         gap: 12px;
     }
 
-    .back-link {
-        order: -1;
-        align-self: flex-start;
-    }
-
     .calendar-legend {
         justify-content: center;
     }
@@ -1620,5 +1678,146 @@ body {
 
     .snow-amount {
         font-size: 0.85rem;
+    }
+}
+
+/* ============================================
+   ABOUT PAGE STYLES
+   ============================================ */
+
+.about-page {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 15px;
+    overflow: auto;
+}
+
+.about-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 30px);
+}
+
+.about-content {
+    flex: 1;
+    padding: 30px 0;
+}
+
+.about-content h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #4a9eff;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.about-section {
+    background: #2d2d2d;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.about-section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #4a9eff;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #4a9eff;
+    padding-bottom: 8px;
+}
+
+.about-section p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #ccc;
+    margin-bottom: 12px;
+}
+
+.about-section p:last-child {
+    margin-bottom: 0;
+}
+
+.about-section em {
+    color: #87ceeb;
+    font-style: italic;
+}
+
+.about-section strong {
+    color: #ffffff;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    color: #ccc;
+    line-height: 1.5;
+}
+
+.feature-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    background: #4a9eff;
+    border-radius: 2px;
+    transform: rotate(45deg);
+}
+
+.feature-list li:last-child {
+    margin-bottom: 0;
+}
+
+.about-section.credits {
+    background: linear-gradient(135deg, #2a3f5f 0%, #2d2d2d 100%);
+    border: 2px solid #4a9eff;
+}
+
+.tech-stack {
+    font-size: 0.9rem !important;
+    color: #999 !important;
+}
+
+.about-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 0.85rem;
+    border-top: 1px solid #333;
+}
+
+/* About page responsive */
+@media (max-width: 768px) {
+    .about-page {
+        padding: 10px;
+    }
+
+    .about-content h1 {
+        font-size: 1.6rem;
+        margin-bottom: 25px;
+    }
+
+    .about-section {
+        padding: 20px 15px;
+    }
+
+    .about-section h2 {
+        font-size: 1.1rem;
+    }
+
+    .about-section p {
+        font-size: 0.95rem;
     }
 }

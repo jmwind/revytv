@@ -22,7 +22,7 @@ function generateTrendArrow(history) {
     const arrow = trend.direction === 'up' ? '▲' : '▼';
     const absChange = Math.abs(trend.change);
 
-    return `<span class="trend-arrow" style="color: ${trend.color}" title="Changed ${trend.direction === 'up' ? '+' : ''}${trend.change}cm">${arrow}${absChange}</span>`;
+    return `<span class="trend-arrow" style="color: ${trend.color}" title="Changed ${trend.direction === 'up' ? '+' : ''}${trend.change}cm">${arrow} ${absChange}</span>`;
 }
 
 // Generate SVG sparkline from history data

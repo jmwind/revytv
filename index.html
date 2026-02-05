@@ -6,7 +6,7 @@
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=45">
+    <link rel="stylesheet" href="styles.css?v=47">
 </head>
 <body>
     <!-- Full page loading overlay -->
@@ -196,8 +196,44 @@
                 </div>
             </div>
         </section>
+
+        <section class="windy-section">
+            <div class="card windy-card">
+                <div class="windy-header">
+                    <span class="windy-title">Snow Forecast Map</span>
+                </div>
+                <div id="windy"></div>
+            </div>
+        </section>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+    <script>
+        windyInit({
+            key: 'LgEGmQsKdyOlCvJV0if03ay1ZcMEyb83',
+            lat: 50.9981,
+            lon: -118.1957,
+            zoom: 7,
+            overlay: 'snowAccu',
+            particlesAnim: 'off'
+        }, windyAPI => {
+            const { store, map } = windyAPI;
+
+            // Disable scroll wheel zoom to prevent hijacking page scroll
+            map.scrollWheelZoom.disable();
+
+            // Start timeline animation after map loads
+            setTimeout(() => {
+                // Method 1: Try store API
+                store.set('animation', true);
+
+                // Method 2: Click play button as fallback
+                const playBtn = document.getElementById('playpause');
+                if (playBtn) playBtn.click();
+            }, 1500);
+        });
+    </script>
     <script src="app.js?v=18"></script>
 </body>
 </html>

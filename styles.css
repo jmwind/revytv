@@ -157,6 +157,86 @@ body {
     display: block;
 }
 
+/* TV Mode Warning for Small Screens */
+.tv-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.tv-warning-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    max-width: 320px;
+}
+
+.tv-warning-icon {
+    width: 60px;
+    height: 60px;
+    color: var(--accent-primary);
+}
+
+.tv-warning-text {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: 3px;
+}
+
+.tv-warning-sub {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.tv-warning-btn {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 24px;
+    background: transparent;
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    text-decoration: none;
+    margin-top: 10px;
+    transition: all 0.15s ease;
+}
+
+.tv-warning-btn:hover {
+    background: var(--accent-dim);
+}
+
+/* Show warning on small/portrait screens */
+@media (max-width: 900px), (orientation: portrait) and (max-height: 700px) {
+    .tv-warning {
+        display: flex;
+    }
+
+    .video-view .video-selector,
+    .video-view .video-webcams-left,
+    .video-view .video-webcams-right,
+    .video-view .video-forecast-overlay,
+    .video-view .ticker-container,
+    .video-view #youtube-player {
+        display: none !important;
+    }
+}
+
 #youtube-player {
     position: absolute;
     top: 0;
@@ -714,7 +794,7 @@ body {
     font-family: var(--font-mono);
     font-size: 2rem;
     font-weight: 700;
-    color: var(--accent-secondary);
+    color: var(--accent-primary);
 }
 
 .condition-inline {

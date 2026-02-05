@@ -6,7 +6,7 @@
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=43">
+    <link rel="stylesheet" href="styles.css?v=45">
 </head>
 <body>
     <!-- Full page loading overlay -->
@@ -38,6 +38,17 @@
     </div>
 
     <div class="video-view">
+        <div class="tv-warning">
+            <div class="tv-warning-content">
+                <svg class="tv-warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                    <polyline points="17 2 12 7 7 2"/>
+                </svg>
+                <div class="tv-warning-text">TV MODE</div>
+                <div class="tv-warning-sub">This view is designed for large displays and won't display properly on mobile devices.</div>
+                <a href="/" class="tv-warning-btn">Go to Dashboard</a>
+            </div>
+        </div>
         <iframe id="youtube-player"
             src="https://www.youtube-nocookie.com/embed/spJ5dqXi6ro?si=Bx7AG1uT-5hXJRKN&autoplay=1&mute=1&loop=1&playlist=spJ5dqXi6ro,dQw4w9WgXcQ,L_jWHffIx5E&controls=0"
             title="YouTube video player"
@@ -187,6 +198,6 @@
         </section>
     </div>
 
-    <script src="app.js?v=17"></script>
+    <script src="app.js?v=18"></script>
 </body>
 </html>

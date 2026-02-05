@@ -155,6 +155,9 @@ function updateUI(data) {
     elements.baseDepth.textContent = data.snow.baseDepth ?? 0;
     elements.snowSeason.textContent = data.snow.seasonTotal ?? 0;
 
+    // Store forecast data for mode switching
+    window._lastForecastData = data.forecast;
+
     // Forecast
     displayForecast(data.forecast);
     if (isTVMode) {
@@ -396,6 +399,64 @@ async function refreshAllData() {
     }
 }
 
+// Switch between TV and Dashboard mode without reloading
+function switchMode(toTVMode) {
+    if (isTVMode === toTVMode) return;
+
+    isTVMode = toTVMode;
+
+    // Update URL without reload
+    const newUrl = toTVMode ? '?tv' : '/';
+    history.pushState({ tvMode: toTVMode }, '', newUrl);
+
+    if (isTVMode) {
+        elements.videoView?.classList.add('active');
+        elements.dashboardView?.classList.remove('active');
+        elements.tickerContainer?.classList.add('active');
+        setupVideoSelector();
+        // Update TV-specific elements with existing data
+        updateWebcams(elements.videoWebcams);
+        updateTicker();
+        // Re-render TV forecast from dashboard data
+        const forecastDays = document.querySelectorAll('#forecast-content .forecast-day');
+        if (forecastDays.length && window._lastForecastData) {
+            updateVideoForecast(window._lastForecastData);
+        }
+    } else {
+        elements.videoView?.classList.remove('active');
+        elements.dashboardView?.classList.add('active');
+        elements.tickerContainer?.classList.remove('active');
+    }
+}
+
+// Setup mode switching links
+function setupModeSwitching() {
+    // Intercept TV mode link clicks
+    document.querySelectorAll('a[href="?tv"]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchMode(true);
+        });
+    });
+
+    // Intercept dashboard link clicks (from TV warning or elsewhere)
+    document.querySelectorAll('a[href="/"]').forEach(link => {
+        // Skip external links, only handle internal navigation
+        if (link.closest('.video-view') || link.closest('.top-nav')) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchMode(false);
+            });
+        }
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', (e) => {
+        const toTVMode = e.state?.tvMode ?? new URLSearchParams(window.location.search).has('tv');
+        switchMode(toTVMode);
+    });
+}
+
 // Initialize
 async function init() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -414,6 +475,8 @@ async function init() {
         elements.dashboardView?.classList.add('active');
         elements.tickerContainer?.classList.remove('active');
     }
+
+    setupModeSwitching();
 }
 
 if (document.readyState === 'loading') {

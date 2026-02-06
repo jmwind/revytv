@@ -9,41 +9,15 @@
 </head>
 <body class="settings-page">
     <div class="settings-container">
-        <nav class="top-nav">
-            <a href="/" class="nav-brand">
-                <svg class="nav-logo" viewBox="0 0 100 100">
-                    <g stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round">
-                        <line x1="50" y1="10" x2="50" y2="90" />
-                        <line x1="10" y1="50" x2="90" y2="50" />
-                        <line x1="21" y1="21" x2="79" y2="79" />
-                        <line x1="79" y1="21" x2="21" y2="79" />
-                        <line x1="50" y1="20" x2="40" y2="30" />
-                        <line x1="50" y1="20" x2="60" y2="30" />
-                        <line x1="50" y1="80" x2="40" y2="70" />
-                        <line x1="50" y1="80" x2="60" y2="70" />
-                    </g>
-                </svg>
-                <span class="nav-title">Snow for Nerds</span>
-            </a>
-            <div class="nav-menu">
-                <div class="nav-dropdown-wrap">
-                    <button class="nav-link nav-pro-btn">Pro</button>
-                    <div class="nav-pro-dropdown">
-                        <a href="/tv.html" class="nav-dropdown-item">TV Mode</a>
-                        <a href="/calendar.html" class="nav-dropdown-item">Yearly Stats</a>
-                    </div>
-                </div>
-                <a href="/about.html" class="nav-link">About</a>
-                <a href="/settings.html" class="nav-link nav-link-auth" style="display:none">Settings</a>
-            </div>
-        </nav>
+        <script src="nav.js"></script>
+        <snow-nav></snow-nav>
 
         <main class="settings-content">
             <h1>TV Mode Settings</h1>
 
             <div class="settings-section">
                 <h2>Your Video Playlist</h2>
-                <p class="settings-description">Add YouTube videos for your TV mode playlist. Paste a YouTube URL or video ID.</p>
+                <p class="settings-description">Add YouTube videos for your TV mode playlist. Paste the full YouTube URL or just its video ID.</p>
 
                 <div id="playlist-form" class="playlist-add-form" style="display:none">
                     <input type="text" id="video-url-input" class="settings-input"

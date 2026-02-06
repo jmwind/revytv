@@ -1,16 +1,3 @@
-// Pro dropdown toggle
-(function() {
-    const proBtn = document.querySelector('.nav-pro-btn');
-    const wrap = document.querySelector('.nav-dropdown-wrap');
-    if (proBtn && wrap) {
-        proBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            wrap.classList.toggle('open');
-        });
-        document.addEventListener('click', () => wrap.classList.remove('open'));
-    }
-})();
-
 // Clerk frontend authentication
 
 const CLERK_PK = 'pk_test_ZGFyaW5nLXJlaW5kZWVyLTEwLmNsZXJrLmFjY291bnRzLmRldiQ';

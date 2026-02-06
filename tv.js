@@ -105,6 +105,8 @@ function updateVideoForecast(forecast) {
 function updateTicker(data) {
     if (!elements.tickerContent || !data) return;
 
+    elements.tickerContent.closest('.ticker-container')?.classList.add('loaded');
+
     const items = [
         ['Temperature', data.weather.alpineTemp != null ? `${data.weather.alpineTemp}°C` : '--'],
         ['Conditions', data.weather.condition ?? '--'],

@@ -6,6 +6,7 @@ const DEFAULT_PLAYLIST = [
 
 let playlist = [];
 let dragIndex = null;
+let currentTvToken = null;
 
 function extractVideoId(input) {
     input = input.trim();
@@ -40,6 +41,9 @@ async function loadPlaylist() {
         if (!res.ok) throw new Error('Failed to load');
         const config = await res.json();
         playlist = config.playlist || [...DEFAULT_PLAYLIST];
+        if (config.tvToken) {
+            currentTvToken = config.tvToken;
+        }
     } catch (e) {
         console.error('Failed to load playlist:', e.message);
         playlist = [...DEFAULT_PLAYLIST];
@@ -175,6 +179,55 @@ async function resetPlaylist() {
     await savePlaylist();
 }
 
+function getTvUrl(token) {
+    const base = window.location.origin;
+    return `${base}/tv?token=${token}`;
+}
+
+function renderTvToken() {
+    const urlEl = document.getElementById('tv-token-url');
+    const copyBtn = document.getElementById('tv-token-copy');
+    const genBtn = document.getElementById('generate-token-btn');
+
+    if (currentTvToken) {
+        urlEl.textContent = getTvUrl(currentTvToken);
+        copyBtn.style.display = '';
+        genBtn.textContent = 'Regenerate';
+    } else {
+        urlEl.textContent = 'No link generated yet';
+        copyBtn.style.display = 'none';
+        genBtn.textContent = 'Generate Link';
+    }
+}
+
+async function generateTvToken() {
+    const genBtn = document.getElementById('generate-token-btn');
+    genBtn.disabled = true;
+    genBtn.textContent = '...';
+    try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/user', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to generate');
+        const data = await res.json();
+        currentTvToken = data.tvToken;
+    } catch (e) {
+        console.error('Failed to generate TV token:', e.message);
+    }
+    genBtn.disabled = false;
+    renderTvToken();
+}
+
+function copyTvToken() {
+    if (!currentTvToken) return;
+    navigator.clipboard.writeText(getTvUrl(currentTvToken));
+    const copyBtn = document.getElementById('tv-token-copy');
+    copyBtn.textContent = 'Copied';
+    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+}
+
 async function initSettings() {
     const isAuthed = await requireAuth('/settings.html');
     if (!isAuthed) return;
@@ -191,6 +244,12 @@ async function initSettings() {
         if (e.key === 'Enter') addVideo();
     });
     document.getElementById('reset-playlist-btn').addEventListener('click', resetPlaylist);
+
+    // TV token section
+    document.getElementById('tv-link-section').style.display = '';
+    renderTvToken();
+    document.getElementById('generate-token-btn').addEventListener('click', generateTvToken);
+    document.getElementById('tv-token-copy').addEventListener('click', copyTvToken);
 }
 
 clerkReady.then(initSettings);

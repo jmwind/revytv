@@ -2911,6 +2911,25 @@ body {
     letter-spacing: 2px;
 }
 
+.tv-token-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tv-token-url {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent-primary);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 12px 14px;
+    word-break: break-all;
+    user-select: all;
+}
+
 /* Settings responsive */
 @media (max-width: 768px) {
     .settings-page {

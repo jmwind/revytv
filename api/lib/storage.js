@@ -188,4 +188,16 @@ async function getWithMock(key, currentAmount, date) {
     return localGetWithMock(key, currentAmount, date);
 }
 
-module.exports = { get, set, getAllByPrefix, useUpstash, getWithMock };
+async function del(key) {
+    if (useUpstash()) {
+        const client = getRedis();
+        await client.del(key);
+    } else {
+        ensureLocalStorage();
+        const data = JSON.parse(fs.readFileSync(LOCAL_STORAGE_PATH, 'utf8'));
+        delete data[key];
+        fs.writeFileSync(LOCAL_STORAGE_PATH, JSON.stringify(data, null, 2));
+    }
+}
+
+module.exports = { get, set, del, getAllByPrefix, useUpstash, getWithMock };

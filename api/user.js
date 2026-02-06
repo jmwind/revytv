@@ -13,7 +13,7 @@ const DEFAULT_PLAYLIST = [
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
@@ -74,6 +74,40 @@ module.exports = async function handler(req, res) {
 
         await storage.set(storageKey, updated);
         return res.status(200).json(updated);
+    }
+
+    if (req.method === 'POST') {
+        const CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        let token;
+        // Generate unique 4-char token
+        for (let attempts = 0; attempts < 10; attempts++) {
+            token = '';
+            for (let i = 0; i < 4; i++) {
+                token += CHARS[Math.floor(Math.random() * CHARS.length)];
+            }
+            const existing = await storage.get(`tvtoken:${token}`);
+            if (!existing) break;
+        }
+
+        // Remove old token if exists
+        const userData = await storage.get(storageKey);
+        if (userData?.tvToken) {
+            await storage.del(`tvtoken:${userData.tvToken}`);
+        }
+
+        // Store reverse lookup
+        await storage.set(`tvtoken:${token}`, auth.userId);
+
+        // Update user doc
+        const now = new Date().toISOString();
+        const updated = {
+            ...userData,
+            tvToken: token,
+            updatedAt: now
+        };
+        await storage.set(storageKey, updated);
+
+        return res.status(200).json({ tvToken: token });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

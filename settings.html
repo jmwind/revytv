@@ -64,6 +64,20 @@
                     <button id="reset-playlist-btn" class="settings-btn secondary">Reset to Default</button>
                 </div>
             </div>
+
+            <div class="settings-section" id="tv-link-section" style="display:none">
+                <h2>TV Access Link</h2>
+                <p class="settings-description">Use this link on your TV to skip sign-in. Anyone with this link can access your TV mode.</p>
+
+                <div id="tv-token-display" class="tv-token-display">
+                    <span id="tv-token-url" class="tv-token-url">No link generated yet</span>
+                    <button id="tv-token-copy" class="settings-btn" style="display:none" title="Copy">Copy</button>
+                </div>
+
+                <div class="playlist-actions">
+                    <button id="generate-token-btn" class="settings-btn">Generate Link</button>
+                </div>
+            </div>
         </main>
 
         <footer class="settings-footer">

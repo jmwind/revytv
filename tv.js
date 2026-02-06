@@ -223,7 +223,7 @@ function updateWebcams() {
     });
 }
 
-// Load user config and start TV mode
+// Load user config via Clerk auth
 async function loadUserConfig() {
     try {
         const token = await getAuthToken();
@@ -243,6 +243,23 @@ async function loadUserConfig() {
     }
 }
 
+// Load user config via TV token
+async function loadUserConfigByToken(tvToken) {
+    try {
+        const response = await fetch(`/api/tv-auth?token=${encodeURIComponent(tvToken)}`);
+        if (!response.ok) return false;
+
+        const config = await response.json();
+        if (config.playlist && config.playlist.length > 0) {
+            playlist = config.playlist;
+        }
+        return true;
+    } catch (e) {
+        console.error('Failed to load config via token:', e.message);
+        return false;
+    }
+}
+
 async function refreshAll() {
     await fetchSnowReport();
     updateWebcams();
@@ -250,15 +267,24 @@ async function refreshAll() {
 
 // Initialize TV mode
 async function init() {
-    // Gate on auth
-    const signedIn = await isSignedIn();
-    if (!signedIn) {
-        window.location.href = '/sign-in.html?redirect_url=' + encodeURIComponent('/tv.html');
-        return;
-    }
+    // Check for TV token in URL first
+    const params = new URLSearchParams(window.location.search);
+    const tvToken = params.get('token');
 
-    // Load user playlist
-    await loadUserConfig();
+    if (tvToken) {
+        const valid = await loadUserConfigByToken(tvToken);
+        if (!valid) {
+            window.location.href = '/sign-in.html?redirect_url=' + encodeURIComponent('/tv.html');
+            return;
+        }
+    } else {
+        const signedIn = await isSignedIn();
+        if (!signedIn) {
+            window.location.href = '/sign-in.html?redirect_url=' + encodeURIComponent('/tv.html');
+            return;
+        }
+        await loadUserConfig();
+    }
 
     // Start video
     if (elements.youtubePlayer && playlist.length > 0) {

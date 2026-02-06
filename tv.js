@@ -62,7 +62,7 @@ function updateVideoForecast(forecast) {
     if (!elements.videoForecastContent) return;
 
     if (!forecast?.length) {
-        elements.videoForecastContent.innerHTML = '<div style="color: #999;">No forecast data</div>';
+        elements.videoForecastContent.innerHTML = '<div style="color: var(--text-muted);">No forecast data</div>';
         return;
     }
 

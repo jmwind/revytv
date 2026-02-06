@@ -24,7 +24,7 @@ async function verifyAuth(req) {
         });
 
         const { isSignedIn, toAuth } = await getClerk().authenticateRequest(requestLike, {
-            authorizedParties: ['http://localhost:3000', 'http://localhost:5173', 'https://revytv.vercel.app'],
+            authorizedParties: ['http://localhost:3000', 'http://localhost:5173', 'https://revytv.vercel.app', 'https://truflake.com'],
         });
         if (!isSignedIn) return null;
         const auth = toAuth();

@@ -240,6 +240,7 @@ async function loadUserConfig() {
         if (config.playlist && config.playlist.length > 0) {
             playlist = config.playlist;
         }
+        applyDisplaySettings(config);
     } catch (e) {
         console.error('Failed to load user config, using defaults:', e.message);
     }
@@ -255,10 +256,31 @@ async function loadUserConfigByToken(tvToken) {
         if (config.playlist && config.playlist.length > 0) {
             playlist = config.playlist;
         }
+        applyDisplaySettings(config);
         return true;
     } catch (e) {
         console.error('Failed to load config via token:', e.message);
         return false;
+    }
+}
+
+function applyDisplaySettings(config) {
+    const videoView = document.querySelector('.video-view');
+    if (!videoView) return;
+
+    videoView.dataset.webcamSize = config.tvWebcamSize || 'large';
+    videoView.dataset.forecastSize = config.tvForecastSize || 'medium';
+    document.body.dataset.ticker = config.tvTicker || 'show';
+
+    const existingWatermark = videoView.querySelector('.tv-watermark');
+    if (existingWatermark) existingWatermark.remove();
+
+    const watermarkText = (config.tvWatermark || '').trim();
+    if (watermarkText) {
+        const el = document.createElement('div');
+        el.className = 'tv-watermark';
+        el.textContent = watermarkText;
+        videoView.appendChild(el);
     }
 }
 

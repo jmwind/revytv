@@ -5,6 +5,11 @@ const storage = require('./lib/storage.js');
 const { verifyAuth } = require('./lib/auth.js');
 const { VALID_THEMES } = require('../theme.js');
 
+const VALID_WEBCAM_SIZES = ['large', 'medium', 'small', 'hidden'];
+const VALID_FORECAST_SIZES = ['small', 'medium', 'large'];
+const VALID_TICKER_OPTIONS = ['show', 'hidden'];
+const MAX_WATERMARK_LENGTH = 40;
+
 const DEFAULT_PLAYLIST = [
     { id: 'spJ5dqXi6ro', title: 'Big mountain' },
     { id: 'BsbMhTEoQiM', title: 'Famillia Fernie 2010' },
@@ -62,6 +67,34 @@ module.exports = async function handler(req, res) {
         if (body.theme !== undefined) {
             if (!VALID_THEMES.includes(body.theme)) {
                 return res.status(400).json({ error: 'Invalid theme' });
+            }
+        }
+
+        // Validate tvWebcamSize if provided
+        if (body.tvWebcamSize !== undefined) {
+            if (!VALID_WEBCAM_SIZES.includes(body.tvWebcamSize)) {
+                return res.status(400).json({ error: 'Invalid webcam size' });
+            }
+        }
+
+        // Validate tvForecastSize if provided
+        if (body.tvForecastSize !== undefined) {
+            if (!VALID_FORECAST_SIZES.includes(body.tvForecastSize)) {
+                return res.status(400).json({ error: 'Invalid forecast size' });
+            }
+        }
+
+        // Validate tvTicker if provided
+        if (body.tvTicker !== undefined) {
+            if (!VALID_TICKER_OPTIONS.includes(body.tvTicker)) {
+                return res.status(400).json({ error: 'Invalid ticker option' });
+            }
+        }
+
+        // Validate tvWatermark if provided
+        if (body.tvWatermark !== undefined) {
+            if (typeof body.tvWatermark !== 'string' || body.tvWatermark.length > MAX_WATERMARK_LENGTH) {
+                return res.status(400).json({ error: 'Watermark must be a string, max 40 characters' });
             }
         }
 

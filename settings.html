@@ -24,6 +24,33 @@
 
             <h2 class="settings-group-heading">TV Mode</h2>
 
+            <div class="settings-section" id="tv-display-section" style="display:none">
+                <h3>Display</h3>
+                <p class="settings-description">Customize the TV mode layout.</p>
+
+                <div class="settings-option-group">
+                    <label class="settings-option-label">Webcam Size</label>
+                    <div id="webcam-size-picker" class="option-picker"></div>
+                </div>
+
+                <div class="settings-option-group">
+                    <label class="settings-option-label">Forecast Card Size</label>
+                    <div id="forecast-size-picker" class="option-picker"></div>
+                </div>
+
+                <div class="settings-option-group">
+                    <label class="settings-option-label">Ticker</label>
+                    <div id="ticker-picker" class="option-picker"></div>
+                </div>
+
+                <div class="settings-option-group">
+                    <label class="settings-option-label">Watermark</label>
+                    <input type="text" id="watermark-input" class="settings-input"
+                           placeholder="e.g. The Last Drop" maxlength="40">
+                    <span class="settings-hint">Shown as a subtle overlay in TV mode</span>
+                </div>
+            </div>
+
             <div class="settings-section">
                 <h3>Video Playlist</h3>
                 <p class="settings-description">Add YouTube videos for your TV mode playlist. Paste the full YouTube URL or just its video ID.</p>

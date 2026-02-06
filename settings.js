@@ -7,6 +7,28 @@ const DEFAULT_PLAYLIST = [
 let playlist = [];
 let dragIndex = null;
 let currentTvToken = null;
+let currentWebcamSize = 'large';
+let currentForecastSize = 'medium';
+let currentTicker = 'show';
+let currentWatermark = '';
+
+const WEBCAM_SIZE_OPTIONS = [
+    { value: 'large', label: 'Large' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'small', label: 'Small' },
+    { value: 'hidden', label: 'Hidden' }
+];
+
+const FORECAST_SIZE_OPTIONS = [
+    { value: 'small', label: 'Small' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'large', label: 'Large' }
+];
+
+const TICKER_OPTIONS = [
+    { value: 'show', label: 'Show' },
+    { value: 'hidden', label: 'Hidden' }
+];
 
 function extractVideoId(input) {
     input = input.trim();
@@ -44,6 +66,10 @@ async function loadPlaylist() {
         if (config.tvToken) {
             currentTvToken = config.tvToken;
         }
+        currentWebcamSize = config.tvWebcamSize || 'large';
+        currentForecastSize = config.tvForecastSize || 'medium';
+        currentTicker = config.tvTicker || 'show';
+        currentWatermark = config.tvWatermark || '';
     } catch (e) {
         console.error('Failed to load playlist:', e.message);
         playlist = [...DEFAULT_PLAYLIST];
@@ -228,6 +254,85 @@ function copyTvToken() {
     setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
 }
 
+async function saveSetting(key, value) {
+    try {
+        const token = await getAuthToken();
+        await fetch('/api/user', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ [key]: value })
+        });
+    } catch (e) {
+        console.error(`Failed to save ${key}:`, e.message);
+    }
+}
+
+function initDisplaySettings() {
+    const section = document.getElementById('tv-display-section');
+    if (!section) return;
+    section.style.display = '';
+
+    // Webcam size picker
+    const webcamPicker = document.getElementById('webcam-size-picker');
+    webcamPicker.innerHTML = WEBCAM_SIZE_OPTIONS.map(opt =>
+        `<button class="option-card ${opt.value === currentWebcamSize ? 'active' : ''}" data-value="${opt.value}">${opt.label}</button>`
+    ).join('');
+    webcamPicker.addEventListener('click', (e) => {
+        const card = e.target.closest('.option-card');
+        if (!card) return;
+        currentWebcamSize = card.dataset.value;
+        webcamPicker.querySelectorAll('.option-card').forEach(c =>
+            c.classList.toggle('active', c.dataset.value === currentWebcamSize)
+        );
+        saveSetting('tvWebcamSize', currentWebcamSize);
+    });
+
+    // Forecast size picker
+    const forecastPicker = document.getElementById('forecast-size-picker');
+    forecastPicker.innerHTML = FORECAST_SIZE_OPTIONS.map(opt =>
+        `<button class="option-card ${opt.value === currentForecastSize ? 'active' : ''}" data-value="${opt.value}">${opt.label}</button>`
+    ).join('');
+    forecastPicker.addEventListener('click', (e) => {
+        const card = e.target.closest('.option-card');
+        if (!card) return;
+        currentForecastSize = card.dataset.value;
+        forecastPicker.querySelectorAll('.option-card').forEach(c =>
+            c.classList.toggle('active', c.dataset.value === currentForecastSize)
+        );
+        saveSetting('tvForecastSize', currentForecastSize);
+    });
+
+    // Ticker picker
+    const tickerPicker = document.getElementById('ticker-picker');
+    tickerPicker.innerHTML = TICKER_OPTIONS.map(opt =>
+        `<button class="option-card ${opt.value === currentTicker ? 'active' : ''}" data-value="${opt.value}">${opt.label}</button>`
+    ).join('');
+    tickerPicker.addEventListener('click', (e) => {
+        const card = e.target.closest('.option-card');
+        if (!card) return;
+        currentTicker = card.dataset.value;
+        tickerPicker.querySelectorAll('.option-card').forEach(c =>
+            c.classList.toggle('active', c.dataset.value === currentTicker)
+        );
+        saveSetting('tvTicker', currentTicker);
+    });
+
+    // Watermark input
+    const watermarkInput = document.getElementById('watermark-input');
+    watermarkInput.value = currentWatermark;
+    let watermarkDebounce = null;
+    watermarkInput.addEventListener('input', () => {
+        currentWatermark = watermarkInput.value;
+        clearTimeout(watermarkDebounce);
+        watermarkDebounce = setTimeout(() => {
+            saveSetting('tvWatermark', currentWatermark);
+        }, 600);
+    });
+}
+
 function initThemePicker() {
     const picker = document.getElementById('theme-picker');
     const section = document.getElementById('theme-section');
@@ -272,6 +377,7 @@ async function initSettings() {
 
     initThemePicker();
     await loadPlaylist();
+    initDisplaySettings();
 
     document.getElementById('playlist-form').style.display = '';
     document.getElementById('playlist-actions').style.display = '';

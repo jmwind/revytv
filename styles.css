@@ -2954,6 +2954,160 @@ body {
     letter-spacing: 2px;
 }
 
+/* ==========================================
+   TV Display Settings: Size Overrides
+   ========================================== */
+
+/* Medium webcams */
+[data-webcam-size="medium"] .video-webcam-wrapper,
+[data-webcam-size="medium"] .video-forecast-webcam {
+    width: 200px;
+    height: 150px;
+}
+
+/* Small webcams */
+[data-webcam-size="small"] .video-webcam-wrapper,
+[data-webcam-size="small"] .video-forecast-webcam {
+    width: 140px;
+    height: 105px;
+}
+
+/* Hidden webcams */
+[data-webcam-size="hidden"] .video-webcams-left,
+[data-webcam-size="hidden"] .video-webcams-right {
+    display: none;
+}
+
+/* Small forecast cards */
+[data-forecast-size="small"] .video-forecast-day {
+    padding: 6px 8px;
+    min-width: 64px;
+    min-height: 72px;
+}
+[data-forecast-size="small"] .video-forecast-day-name {
+    font-size: 0.45rem;
+}
+[data-forecast-size="small"] .video-forecast-amount {
+    font-size: 0.85rem;
+}
+[data-forecast-size="small"] .video-forecast-freezing {
+    font-size: 0.55rem;
+}
+[data-forecast-size="small"] .video-forecast-content {
+    gap: 6px;
+}
+
+/* Large forecast cards */
+[data-forecast-size="large"] .video-forecast-day {
+    padding: 14px 18px;
+    min-width: 110px;
+    min-height: 120px;
+}
+[data-forecast-size="large"] .video-forecast-day-name {
+    font-size: 0.7rem;
+}
+[data-forecast-size="large"] .video-forecast-amount {
+    font-size: 1.5rem;
+}
+[data-forecast-size="large"] .video-forecast-freezing {
+    font-size: 0.8rem;
+}
+[data-forecast-size="large"] .video-forecast-content {
+    gap: 14px;
+}
+
+/* Hidden ticker */
+body[data-ticker="hidden"] .ticker-container {
+    display: none !important;
+}
+
+body[data-ticker="hidden"] .video-webcams-left,
+body[data-ticker="hidden"] .video-webcams-right,
+body[data-ticker="hidden"] .video-forecast-overlay {
+    bottom: 15px;
+}
+
+/* Watermark */
+.tv-watermark {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 150;
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: var(--bg-primary);
+    border: 2px solid var(--text-primary);
+    padding: 8px 20px;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ==========================================
+   Settings: Option Pickers
+   ========================================== */
+
+.settings-option-group {
+    margin-bottom: 20px;
+}
+
+.settings-option-group:last-child {
+    margin-bottom: 0;
+}
+
+.settings-option-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.option-picker {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.option-card {
+    padding: 8px 16px;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.option-card:hover {
+    border-color: var(--text-secondary);
+}
+
+.option-card.active {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.settings-hint {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
 .tv-token-display {
     display: flex;
     align-items: center;

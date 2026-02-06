@@ -42,6 +42,11 @@ module.exports = async function handler(req, res) {
             await storeSeasonTotal(data.snow.seasonTotal, fetchedAt);
         }
 
+        // Store daily new snow high-water mark
+        if (data.snow.newSnow != null) {
+            await storeNewSnow(data.snow.newSnow, fetchedAt);
+        }
+
         data.fetchedAt = fetchedAt;
         data.source = SNOW_REPORT_URL;
         data.storageMode = storage.useUpstash() ? 'upstash-redis' : 'local-json';
@@ -107,6 +112,23 @@ async function storeSeasonTotal(seasonTotal, fetchedAt) {
     await storage.set(storageKey, {
         date: today,
         seasonTotal: seasonTotal,
+        recordedAt: fetchedAt
+    });
+}
+
+// Store daily new snow (high-water mark — only updates if higher)
+async function storeNewSnow(newSnow, fetchedAt) {
+    const today = new Date(fetchedAt).toISOString().split('T')[0];
+    const storageKey = `newsnow:${today}`;
+
+    const existing = await storage.get(storageKey);
+    if (existing && existing.newSnow >= newSnow) {
+        return; // Already have an equal or higher value
+    }
+
+    await storage.set(storageKey, {
+        date: today,
+        newSnow: newSnow,
         recordedAt: fetchedAt
     });
 }

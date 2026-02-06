@@ -269,59 +269,40 @@ function parseSnowReport(html) {
 
 function extractForecast(html) {
     const forecast = [];
-    const days = ['Today', 'Tonight', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const addedDays = new Set();
+    const validDays = 'Today|Tonight|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday';
 
-    for (const day of days) {
-        if (addedDays.has(day)) continue;
+    // Only parse the Alpine Forecast section
+    const alpineMatch = html.match(/id="alpine"[\s\S]*?>([\s\S]*?)(?=<[^>]*id="valley"|$)/i);
+    const alpineHtml = alpineMatch ? alpineMatch[1] : html;
 
-        const dayPattern = new RegExp(
-            `<h[1-6][^>]*>\\s*${day}\\s*</h[1-6]>([\\s\\S]*?)(?=<h[1-6]|$)`,
-            'i'
-        );
-        const dayMatch = html.match(dayPattern);
+    // Find all day sections in document order
+    const sectionPattern = new RegExp(
+        `<h[1-6][^>]*>\\s*(${validDays})\\s*</h[1-6]>([\\s\\S]*?)(?=<h[1-6]|$)`,
+        'gi'
+    );
 
-        if (dayMatch) {
-            const sectionHtml = dayMatch[1];
-            const sectionText = sectionHtml.replace(/<[^>]*>/g, ' ');
+    for (const match of alpineHtml.matchAll(sectionPattern)) {
+        const day = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+        const sectionText = match[2].replace(/<[^>]*>/g, ' ');
 
-            const snowMatch = sectionText.match(/Snow:\s*(\d+)\s*cm/i);
-            const amount = snowMatch ? parseInt(snowMatch[1]) : 0;
+        const snowMatch = sectionText.match(/Snow:\s*(\d+)\s*cm/i);
+        const amount = snowMatch ? parseInt(snowMatch[1]) : 0;
 
-            let freezingLevel = null;
-            const freezingMatch = sectionText.match(/Freezing\s+level:\s*(\d+)\s*metres?/i);
-            const valleyMatch = sectionText.match(/Freezing\s+level\s+at\s+valley\s+bottom/i);
+        let freezingLevel = null;
+        const freezingMatch = sectionText.match(/Freezing\s+level:\s*(\d+)\s*metres?/i);
+        const valleyMatch = sectionText.match(/Freezing\s+level\s+at\s+valley\s+bottom/i);
+        if (freezingMatch) freezingLevel = parseInt(freezingMatch[1]);
+        else if (valleyMatch) freezingLevel = 'valley bottom';
 
-            if (freezingMatch) {
-                freezingLevel = parseInt(freezingMatch[1]);
-            } else if (valleyMatch) {
-                freezingLevel = 'valley bottom';
-            }
+        const descMatch = sectionText.match(/^\s*([A-Z][^.]*\.)/);
+        const description = descMatch ? descMatch[1].trim() : null;
 
-            const descMatch = sectionText.match(/^\s*([A-Z][^.]*\.)/);
-            const description = descMatch ? descMatch[1].trim() : null;
-
-            forecast.push({ day, amount, freezingLevel, description });
-            addedDays.add(day);
-        }
+        forecast.push({ day, amount, freezingLevel, description });
     }
-
-    // Sort forecast
-    const todayIndex = new Date().getDay();
-    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    forecast.sort((a, b) => {
-        const sortOrder = (d) => {
-            if (d === 'Today') return 0;
-            if (d === 'Tonight') return 1;
-            const dayIndex = weekdays.indexOf(d);
-            if (dayIndex === -1) return 99;
-            let daysFromToday = dayIndex - todayIndex;
-            if (daysFromToday <= 0) daysFromToday += 7;
-            return 1 + daysFromToday;
-        };
-        return sortOrder(a.day) - sortOrder(b.day);
-    });
 
     return forecast;
 }
+
+// Export parsing functions for testing
+module.exports.extractForecast = extractForecast;
+module.exports.parseSnowReport = parseSnowReport;

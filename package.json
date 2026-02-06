@@ -2,11 +2,17 @@
   "name": "revytv",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "test": "jest"
+  },
   "engines": {
     "node": "24.x"
   },
   "dependencies": {
     "@clerk/backend": "^2.30.1",
     "@upstash/redis": "^1.36.1"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
   }
 }

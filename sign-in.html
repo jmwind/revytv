@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In | Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body class="signin-page">
@@ -34,16 +35,18 @@
             }
 
             const signInDiv = document.getElementById('clerk-sign-in');
+            const theme = THEMES[getStoredTheme() || 'midnight'];
+            const c = theme.colors;
             clerk.mountSignIn(signInDiv, {
                 afterSignInUrl: redirectUrl,
                 afterSignUpUrl: redirectUrl,
                 appearance: {
                     variables: {
-                        colorPrimary: '#00ff88',
-                        colorBackground: '#1a1a1a',
-                        colorText: '#f0f0f0',
-                        colorInputBackground: '#0a0a0a',
-                        colorInputText: '#f0f0f0',
+                        colorPrimary: c['--accent-primary'],
+                        colorBackground: c['--bg-card'],
+                        colorText: c['--text-primary'],
+                        colorInputBackground: c['--bg-primary'],
+                        colorInputText: c['--text-primary'],
                         borderRadius: '0px'
                     }
                 }

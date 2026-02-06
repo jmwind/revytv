@@ -228,10 +228,49 @@ function copyTvToken() {
     setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
 }
 
+function initThemePicker() {
+    const picker = document.getElementById('theme-picker');
+    const section = document.getElementById('theme-section');
+    if (!picker || !section) return;
+
+    section.style.display = '';
+    const currentTheme = getStoredTheme() || 'midnight';
+
+    picker.innerHTML = Object.entries(THEMES).map(([key, theme]) => {
+        const c = theme.colors;
+        return `
+            <button class="theme-card ${key === currentTheme ? 'active' : ''}" data-theme="${key}">
+                <div class="theme-preview" style="background: ${c['--bg-primary']};">
+                    <div class="theme-preview-accent" style="background: ${c['--accent-primary']};"></div>
+                    <div class="theme-preview-text" style="color: ${c['--text-primary']};">Aa</div>
+                </div>
+                <span class="theme-card-name">${theme.label}</span>
+            </button>
+        `;
+    }).join('');
+
+    picker.addEventListener('click', async (e) => {
+        const card = e.target.closest('.theme-card');
+        if (!card) return;
+        const name = card.dataset.theme;
+        setTheme(name);
+        picker.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === name));
+        try {
+            const token = await getAuthToken();
+            await fetch('/api/user', {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ theme: name })
+            });
+        } catch {}
+    });
+}
+
 async function initSettings() {
     const isAuthed = await requireAuth('/settings.html');
     if (!isAuthed) return;
 
+    initThemePicker();
     await loadPlaylist();
 
     document.getElementById('playlist-form').style.display = '';

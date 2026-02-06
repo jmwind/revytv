@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings | Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body class="settings-page">
@@ -13,10 +14,18 @@
         <snow-nav></snow-nav>
 
         <main class="settings-content">
-            <h1>TV Mode Settings</h1>
+            <h1>Settings</h1>
+
+            <div class="settings-section" id="theme-section" style="display:none">
+                <h2>Color Theme</h2>
+                <p class="settings-description">Choose a color scheme for the entire site.</p>
+                <div id="theme-picker" class="theme-picker"></div>
+            </div>
+
+            <h2 class="settings-group-heading">TV Mode</h2>
 
             <div class="settings-section">
-                <h2>Your Video Playlist</h2>
+                <h3>Video Playlist</h3>
                 <p class="settings-description">Add YouTube videos for your TV mode playlist. Paste the full YouTube URL or just its video ID.</p>
 
                 <div id="playlist-form" class="playlist-add-form" style="display:none">
@@ -40,7 +49,7 @@
             </div>
 
             <div class="settings-section" id="tv-link-section" style="display:none">
-                <h2>TV Access Link</h2>
+                <h3>TV Access Link</h3>
                 <p class="settings-description">Use this link on your TV to skip sign-in. Anyone with this link can access your TV mode.</p>
 
                 <div id="tv-token-display" class="tv-token-display">

@@ -11,6 +11,9 @@ let clerkReady = new Promise((resolve) => {
     script.addEventListener('load', async () => {
         await window.Clerk.load();
         renderAuthUI(window.Clerk);
+        if (window.Clerk.user && typeof syncThemeFromServer === 'function') {
+            syncThemeFromServer();
+        }
         resolve(window.Clerk);
     });
     script.addEventListener('error', () => {
@@ -59,6 +62,7 @@ function renderAuthUI(clerk) {
             document.querySelector('.nav-dropdown-wrap')?.classList.remove('open');
         });
         authContainer.querySelector('.nav-signout-btn').addEventListener('click', async () => {
+            if (typeof clearTheme === 'function') clearTheme();
             await clerk.signOut();
             window.location.href = '/';
         });

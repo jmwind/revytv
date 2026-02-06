@@ -21,7 +21,7 @@ function generateDetailedChart(history, width = 400, height = 150) {
     const circles = amounts.map((val, i) => {
         const x = padding.left + (i / (amounts.length - 1)) * chartWidth;
         const y = padding.top + chartHeight - ((val - min) / range) * chartHeight;
-        return `<circle cx="${x}" cy="${y}" r="4" fill="#00ff88" stroke="#0a0a0a" stroke-width="2"/>`;
+        return `<circle cx="${x}" cy="${y}" r="4" fill="var(--accent-primary, #00ff88)" stroke="var(--bg-primary, #0a0a0a)" stroke-width="2"/>`;
     }).join('');
 
     const yLabels = [min, Math.round((min + max) / 2), max].map((val, i) => {

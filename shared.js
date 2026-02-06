@@ -8,9 +8,9 @@ function calculateTrend(history) {
     const lastVal = amounts[amounts.length - 1];
     const change = lastVal - firstVal;
 
-    if (change > 0) return { direction: 'up', change, color: '#4ade80' };
-    if (change < 0) return { direction: 'down', change, color: '#f87171' };
-    return { direction: 'none', change: 0, color: '#94a3b8' };
+    if (change > 0) return { direction: 'up', change, color: 'var(--trend-up, #4ade80)' };
+    if (change < 0) return { direction: 'down', change, color: 'var(--trend-down, #f87171)' };
+    return { direction: 'none', change: 0, color: 'var(--trend-neutral, #94a3b8)' };
 }
 
 function generateTrendArrow(history) {

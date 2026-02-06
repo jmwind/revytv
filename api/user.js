@@ -3,6 +3,7 @@
 
 const storage = require('./lib/storage.js');
 const { verifyAuth } = require('./lib/auth.js');
+const { VALID_THEMES } = require('../theme.js');
 
 const DEFAULT_PLAYLIST = [
     { id: 'spJ5dqXi6ro', title: 'Big mountain' },
@@ -54,6 +55,13 @@ module.exports = async function handler(req, res) {
                 if (!item.id || typeof item.id !== 'string' || !item.title || typeof item.title !== 'string') {
                     return res.status(400).json({ error: 'Each playlist item must have id and title strings' });
                 }
+            }
+        }
+
+        // Validate theme if provided
+        if (body.theme !== undefined) {
+            if (!VALID_THEMES.includes(body.theme)) {
+                return res.status(400).json({ error: 'Invalid theme' });
             }
         }
 

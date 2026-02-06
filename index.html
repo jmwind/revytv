@@ -6,9 +6,9 @@
     <meta name="description" content="Revelstoke Mountain Resort - Live weather, snow conditions, and webcams">
     <title>Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=49">
+    <link rel="stylesheet" href="styles.css?v=50">
 </head>
-<body>
+<body class="is-loading">
     <!-- Full page loading overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
@@ -37,64 +37,10 @@
         </div>
     </div>
 
-    <div class="video-view">
-        <div class="tv-warning">
-            <div class="tv-warning-content">
-                <svg class="tv-warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
-                    <polyline points="17 2 12 7 7 2"/>
-                </svg>
-                <div class="tv-warning-text">TV MODE</div>
-                <div class="tv-warning-sub">This view is designed for large displays and won't display properly on mobile devices.</div>
-                <a href="/" class="tv-warning-btn">Go to Dashboard</a>
-            </div>
-        </div>
-        <iframe id="youtube-player"
-            src="https://www.youtube-nocookie.com/embed/spJ5dqXi6ro?si=Bx7AG1uT-5hXJRKN&autoplay=1&mute=1&loop=1&playlist=spJ5dqXi6ro,dQw4w9WgXcQ,L_jWHffIx5E&controls=0"
-            title="YouTube video player"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen>
-        </iframe>
-
-        <!-- Video Playlist Selector -->
-        <div class="video-selector" id="video-selector">
-            <button class="video-selector-toggle" id="video-selector-toggle">
-                <span class="video-selector-icon">&#9654;</span>
-                <span class="video-selector-current" id="video-selector-current">Now Playing</span>
-            </button>
-            <div class="video-selector-list" id="video-selector-list">
-                <!-- Populated by JavaScript -->
-            </div>
-        </div>
-
-        <div class="video-webcams-left">
-            <img id="video-webcam-gnorm" class="video-forecast-webcam" alt="Gnorm">
-            <img id="video-webcam-kpmc" class="video-forecast-webcam" alt="KPMC">
-        </div>
-
-        <div class="video-forecast-overlay">
-            <div id="video-forecast-content" class="video-forecast-content">
-                <!-- Forecast will be populated here -->
-            </div>
-        </div>
-
-        <div class="video-webcams-right">
-            <img id="video-webcam-ripper" class="video-forecast-webcam" alt="Ripper">
-            <img id="video-webcam-pvwk" class="video-forecast-webcam" alt="PVWK">
-        </div>
-    </div>
-
-    <div class="ticker-container">
-        <div class="ticker-content" id="ticker-content">
-        </div>
-    </div>
-
-    <div class="container dashboard-view">
+    <div class="container dashboard-view active">
         <!-- Top Navigation Bar -->
         <nav class="top-nav">
-            <div class="nav-brand">
+            <a href="/" class="nav-brand">
                 <svg class="nav-logo" viewBox="0 0 100 100">
                     <g stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round">
                         <line x1="50" y1="10" x2="50" y2="90" />
@@ -107,12 +53,18 @@
                         <line x1="50" y1="80" x2="60" y2="70" />
                     </g>
                 </svg>
-                <span class="nav-title">Revy snow for nerds</span>
-            </div>
+                <span class="nav-title">Snow for Nerds</span>
+            </a>
             <div class="nav-menu">
-                <a href="?tv" class="nav-link">TV Mode</a>
-                <a href="/calendar.html" class="nav-link">Yearly Stats</a>
+                <div class="nav-dropdown-wrap">
+                    <button class="nav-link nav-pro-btn">Pro</button>
+                    <div class="nav-pro-dropdown">
+                        <a href="/tv.html" class="nav-dropdown-item">TV Mode</a>
+                        <a href="/calendar.html" class="nav-dropdown-item">Yearly Stats</a>
+                    </div>
+                </div>
                 <a href="/about.html" class="nav-link">About</a>
+                <a href="/settings.html" class="nav-link nav-link-auth" style="display:none">Settings</a>
             </div>
         </nav>
 
@@ -123,7 +75,7 @@
                         <div class="stat-compact highlight">
                             <span class="stat-label-compact">New Snow</span>
                             <span class="stat-value-compact"><span id="snow-new">--</span> cm</span>
-                        </div>                        
+                        </div>
                         <div class="stat-compact">
                             <span class="stat-label-compact">Last Hour</span>
                             <span class="stat-value-compact"><span id="snow-lasthour">--</span> cm</span>
@@ -234,6 +186,8 @@
             }, 1500);
         });
     </script>
-    <script src="app.js?v=19"></script>
+    <script src="shared.js"></script>
+    <script src="auth.js" async></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>

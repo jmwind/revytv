@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revelstoke Mountain Resort - TV Mode">
+    <title>TV Mode | Revy Snow for Nerds</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="styles.css?v=50">
+</head>
+<body>
+    <div class="video-view active">
+        <div class="tv-warning">
+            <div class="tv-warning-content">
+                <svg class="tv-warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                    <polyline points="17 2 12 7 7 2"/>
+                </svg>
+                <div class="tv-warning-text">TV MODE</div>
+                <div class="tv-warning-sub">This view is designed for large displays and won't display properly on mobile devices.</div>
+                <a href="/" class="tv-warning-btn">Go to Dashboard</a>
+            </div>
+        </div>
+        <iframe id="youtube-player"
+            src=""
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+        </iframe>
+
+        <!-- TV Menu -->
+        <div class="video-selector" id="video-selector">
+            <button class="video-selector-toggle" id="video-selector-toggle" title="Menu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </button>
+            <div class="video-selector-list" id="video-selector-list">
+            </div>
+        </div>
+
+        <div class="video-webcams-left">
+            <div class="video-webcam-wrapper skeleton-webcam">
+                <div class="webcam-skeleton-fill"><svg viewBox="0 0 100 100" class="webcam-skeleton-icon"><g stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"><line x1="50" y1="15" x2="50" y2="85"/><line x1="15" y1="50" x2="85" y2="50"/><line x1="25" y1="25" x2="75" y2="75"/><line x1="75" y1="25" x2="25" y2="75"/></g></svg><span class="webcam-skeleton-label">Gnorm</span></div>
+                <img id="video-webcam-gnorm" class="video-forecast-webcam" alt="Gnorm">
+            </div>
+            <div class="video-webcam-wrapper skeleton-webcam">
+                <div class="webcam-skeleton-fill"><svg viewBox="0 0 100 100" class="webcam-skeleton-icon"><g stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"><line x1="50" y1="15" x2="50" y2="85"/><line x1="15" y1="50" x2="85" y2="50"/><line x1="25" y1="25" x2="75" y2="75"/><line x1="75" y1="25" x2="25" y2="75"/></g></svg><span class="webcam-skeleton-label">KPMC</span></div>
+                <img id="video-webcam-kpmc" class="video-forecast-webcam" alt="KPMC">
+            </div>
+        </div>
+
+        <div class="video-forecast-overlay">
+            <div id="video-forecast-content" class="video-forecast-content">
+            </div>
+        </div>
+
+        <div class="video-webcams-right">
+            <div class="video-webcam-wrapper skeleton-webcam">
+                <div class="webcam-skeleton-fill"><svg viewBox="0 0 100 100" class="webcam-skeleton-icon"><g stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"><line x1="50" y1="15" x2="50" y2="85"/><line x1="15" y1="50" x2="85" y2="50"/><line x1="25" y1="25" x2="75" y2="75"/><line x1="75" y1="25" x2="25" y2="75"/></g></svg><span class="webcam-skeleton-label">Ripper</span></div>
+                <img id="video-webcam-ripper" class="video-forecast-webcam" alt="Ripper">
+            </div>
+            <div class="video-webcam-wrapper skeleton-webcam">
+                <div class="webcam-skeleton-fill"><svg viewBox="0 0 100 100" class="webcam-skeleton-icon"><g stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"><line x1="50" y1="15" x2="50" y2="85"/><line x1="15" y1="50" x2="85" y2="50"/><line x1="25" y1="25" x2="75" y2="75"/><line x1="75" y1="25" x2="25" y2="75"/></g></svg><span class="webcam-skeleton-label">PVWK</span></div>
+                <img id="video-webcam-pvwk" class="video-forecast-webcam" alt="PVWK">
+            </div>
+        </div>
+    </div>
+
+    <div class="ticker-container active">
+        <div class="ticker-content" id="ticker-content">
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="auth.js"></script>
+    <script src="tv.js"></script>
+</body>
+</html>

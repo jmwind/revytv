@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Revy Snow for Nerds</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="styles.css?v=50">
+</head>
+<body class="settings-page">
+    <div class="settings-container">
+        <nav class="top-nav">
+            <a href="/" class="nav-brand">
+                <svg class="nav-logo" viewBox="0 0 100 100">
+                    <g stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round">
+                        <line x1="50" y1="10" x2="50" y2="90" />
+                        <line x1="10" y1="50" x2="90" y2="50" />
+                        <line x1="21" y1="21" x2="79" y2="79" />
+                        <line x1="79" y1="21" x2="21" y2="79" />
+                        <line x1="50" y1="20" x2="40" y2="30" />
+                        <line x1="50" y1="20" x2="60" y2="30" />
+                        <line x1="50" y1="80" x2="40" y2="70" />
+                        <line x1="50" y1="80" x2="60" y2="70" />
+                    </g>
+                </svg>
+                <span class="nav-title">Snow for Nerds</span>
+            </a>
+            <div class="nav-menu">
+                <div class="nav-dropdown-wrap">
+                    <button class="nav-link nav-pro-btn">Pro</button>
+                    <div class="nav-pro-dropdown">
+                        <a href="/tv.html" class="nav-dropdown-item">TV Mode</a>
+                        <a href="/calendar.html" class="nav-dropdown-item">Yearly Stats</a>
+                    </div>
+                </div>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/settings.html" class="nav-link nav-link-auth" style="display:none">Settings</a>
+            </div>
+        </nav>
+
+        <main class="settings-content">
+            <h1>TV Mode Settings</h1>
+
+            <div class="settings-section">
+                <h2>Your Video Playlist</h2>
+                <p class="settings-description">Add YouTube videos for your TV mode playlist. Paste a YouTube URL or video ID.</p>
+
+                <div id="playlist-form" class="playlist-add-form" style="display:none">
+                    <input type="text" id="video-url-input" class="settings-input"
+                           placeholder="YouTube URL or video ID">
+                    <input type="text" id="video-title-input" class="settings-input settings-input-title"
+                           placeholder="Title (optional)">
+                    <button id="add-video-btn" class="settings-btn">Add</button>
+                </div>
+
+                <div id="playlist-items" class="playlist-items">
+                    <div class="skeleton-item"><div class="skeleton-line skeleton-wide"></div><div class="skeleton-line skeleton-narrow"></div></div>
+                    <div class="skeleton-item"><div class="skeleton-line skeleton-wide"></div><div class="skeleton-line skeleton-narrow"></div></div>
+                    <div class="skeleton-item"><div class="skeleton-line skeleton-wide"></div><div class="skeleton-line skeleton-narrow"></div></div>
+                    <div class="skeleton-item"><div class="skeleton-line skeleton-wide"></div><div class="skeleton-line skeleton-narrow"></div></div>
+                </div>
+
+                <div id="playlist-actions" class="playlist-actions" style="display:none">
+                    <button id="reset-playlist-btn" class="settings-btn secondary">Reset to Default</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="settings-footer">
+            <p>Changes are saved automatically</p>
+        </footer>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>

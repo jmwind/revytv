@@ -1,55 +1,5 @@
 // Revelstoke Mountain Dashboard
 
-// Calculate trend from history
-function calculateTrend(history) {
-    if (!history || history.length < 2) return { direction: 'none', change: 0 };
-
-    const amounts = history.map(h => h.amount);
-    const firstVal = amounts[0];
-    const lastVal = amounts[amounts.length - 1];
-    const change = lastVal - firstVal;
-
-    if (change > 0) return { direction: 'up', change, color: '#4ade80' };
-    if (change < 0) return { direction: 'down', change, color: '#f87171' };
-    return { direction: 'none', change: 0, color: '#94a3b8' };
-}
-
-// Generate trend arrow HTML
-function generateTrendArrow(history) {
-    const trend = calculateTrend(history);
-    if (trend.direction === 'none') return '';
-
-    const arrow = trend.direction === 'up' ? '▲' : '▼';
-    const absChange = Math.abs(trend.change);
-
-    return `<span class="trend-arrow" style="color: ${trend.color}" title="Changed ${trend.direction === 'up' ? '+' : ''}${trend.change}cm">${arrow} ${absChange}</span>`;
-}
-
-// Generate SVG sparkline from history data
-function generateSparkline(history, width = 50, height = 20) {
-    if (!history || history.length < 2) return '';
-
-    const amounts = history.map(h => h.amount);
-    const min = Math.min(...amounts);
-    const max = Math.max(...amounts);
-    const range = max - min || 1;
-
-    const points = amounts.map((val, i) => {
-        const x = (i / (amounts.length - 1)) * width;
-        const y = height - ((val - min) / range) * (height - 4) - 2;
-        return `${x},${y}`;
-    }).join(' ');
-
-    const trend = calculateTrend(history);
-
-    return `
-        <svg class="sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-            <polyline fill="none" stroke="${trend.color}" stroke-width="1.5" points="${points}" />
-            <circle cx="${width}" cy="${height - ((amounts[amounts.length - 1] - min) / range) * (height - 4) - 2}" r="2" fill="${trend.color}" />
-        </svg>
-    `;
-}
-
 // Generate detailed SVG chart for popup
 function generateDetailedChart(history, width = 400, height = 150) {
     if (!history || history.length < 2) return '<div class="no-history">Not enough data for chart</div>';
@@ -62,27 +12,23 @@ function generateDetailedChart(history, width = 400, height = 150) {
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
 
-    // Generate points for the line
     const points = amounts.map((val, i) => {
         const x = padding.left + (i / (amounts.length - 1)) * chartWidth;
         const y = padding.top + chartHeight - ((val - min) / range) * chartHeight;
         return `${x},${y}`;
     }).join(' ');
 
-    // Generate circles and labels for each point
     const circles = amounts.map((val, i) => {
         const x = padding.left + (i / (amounts.length - 1)) * chartWidth;
         const y = padding.top + chartHeight - ((val - min) / range) * chartHeight;
         return `<circle cx="${x}" cy="${y}" r="4" fill="#00ff88" stroke="#0a0a0a" stroke-width="2"/>`;
     }).join('');
 
-    // Y-axis labels
     const yLabels = [min, Math.round((min + max) / 2), max].map((val, i) => {
         const y = padding.top + chartHeight - (i / 2) * chartHeight;
         return `<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" fill="#888" font-size="11">${val}</text>`;
     }).join('');
 
-    // X-axis labels (first, middle, last dates)
     const xLabelIndices = [0, Math.floor(history.length / 2), history.length - 1];
     const xLabels = xLabelIndices.map(i => {
         const x = padding.left + (i / (amounts.length - 1)) * chartWidth;
@@ -95,14 +41,10 @@ function generateDetailedChart(history, width = 400, height = 150) {
 
     return `
         <svg class="detailed-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-            <!-- Grid lines -->
             <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + chartHeight}" stroke="#333" stroke-width="1"/>
             <line x1="${padding.left}" y1="${padding.top + chartHeight}" x2="${padding.left + chartWidth}" y2="${padding.top + chartHeight}" stroke="#333" stroke-width="1"/>
-            <!-- Data line -->
             <polyline fill="none" stroke="${trend.color}" stroke-width="2" points="${points}" />
-            <!-- Data points -->
             ${circles}
-            <!-- Labels -->
             ${yLabels}
             ${xLabels}
             <text x="${padding.left - 8}" y="${padding.top - 8}" text-anchor="end" fill="#666" font-size="10">cm</text>
@@ -110,7 +52,6 @@ function generateDetailedChart(history, width = 400, height = 150) {
     `;
 }
 
-// Format date/time for display
 function formatDateTime(isoString) {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
@@ -124,7 +65,6 @@ function formatDateTime(isoString) {
 
 // Show forecast detail popup
 function showForecastPopup(day) {
-    // Remove existing popup if any
     closeForecastPopup();
 
     const hasHistory = day.history?.length > 0;
@@ -194,20 +134,15 @@ function showForecastPopup(day) {
 
     document.body.appendChild(popup);
 
-    // Close handlers
     popup.querySelector('.popup-close').addEventListener('click', closeForecastPopup);
     popup.addEventListener('click', (e) => {
         if (e.target === popup) closeForecastPopup();
     });
 
-    // Escape key to close
     document.addEventListener('keydown', handlePopupEscape);
-
-    // Animate in
     requestAnimationFrame(() => popup.classList.add('active'));
 }
 
-// Close forecast popup
 function closeForecastPopup() {
     const popup = document.querySelector('.forecast-popup-overlay');
     if (popup) {
@@ -217,7 +152,6 @@ function closeForecastPopup() {
     document.removeEventListener('keydown', handlePopupEscape);
 }
 
-// Handle escape key for popup
 function handlePopupEscape(e) {
     if (e.key === 'Escape') closeForecastPopup();
 }
@@ -230,21 +164,10 @@ const CONFIG = {
         ripper: 'https://www.revelstokemountainresort.com/uploads/ripper/ripper-medium.jpg',
         pvwk: 'https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_PVWK000010B0'
     },
-    refreshInterval: 600000, // 10 minutes
-    // Video playlist configuration
-    videoPlaylist: [
-        { id: 'spJ5dqXi6ro', title: 'Big mountain' },
-        { id: 'BsbMhTEoQiM', title: 'Famillia Fernie 2010' },
-        { id: 'TPND631Dh-I', title: 'Famillia Spring Break 2010' },
-        { id: 'IRwZN2JvtYc', title: 'Famillia Heli NZ 2013' }
-
-    ]
+    refreshInterval: 600000
 };
 
 let refreshTimer = null;
-let isTVMode = false;
-let currentVideoIndex = 0;
-let isVideoSelectorOpen = false;
 
 const elements = {
     currentTemp: document.getElementById('current-temp'),
@@ -266,32 +189,18 @@ const elements = {
         kpmc: document.getElementById('webcam-kpmc'),
         ripper: document.getElementById('webcam-ripper'),
         pvwk: document.getElementById('webcam-pvwk')
-    },
-    videoView: document.querySelector('.video-view'),
-    dashboardView: document.querySelector('.dashboard-view'),
-    tickerContainer: document.querySelector('.ticker-container'),
-    tickerContent: document.getElementById('ticker-content'),
-    videoForecastContent: document.getElementById('video-forecast-content'),
-    videoWebcams: {
-        gnorm: document.getElementById('video-webcam-gnorm'),
-        kpmc: document.getElementById('video-webcam-kpmc'),
-        ripper: document.getElementById('video-webcam-ripper'),
-        pvwk: document.getElementById('video-webcam-pvwk')
-    },
-    videoSelector: document.getElementById('video-selector'),
-    videoSelectorToggle: document.getElementById('video-selector-toggle'),
-    videoSelectorCurrent: document.getElementById('video-selector-current'),
-    videoSelectorList: document.getElementById('video-selector-list'),
-    youtubePlayer: document.getElementById('youtube-player')
+    }
 };
 
-// Hide loading overlay
 function hideLoading() {
     const overlay = document.getElementById('loading-overlay');
-    if (overlay) overlay.classList.add('hidden');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        document.body.classList.remove('is-loading');
+        window.scrollTo(0, 0);
+    }
 }
 
-// Fetch snow report from API
 async function fetchSnowReport() {
     try {
         const response = await fetch(CONFIG.snowReportApi);
@@ -304,13 +213,11 @@ async function fetchSnowReport() {
         hideLoading();
     } catch (error) {
         console.error('Error fetching snow report:', error.message);
-        hideLoading(); // Hide loading even on error
+        hideLoading();
     }
 }
 
-// Update UI with API data
 function updateUI(data) {
-    // Weather
     elements.currentTemp.textContent = data.weather.alpineTemp ?? '--';
     elements.weatherCondition.textContent = data.weather.condition ?? '--';
     elements.windSpeed.textContent = data.weather.windSpeed ? `${data.weather.windSpeed} km/h` : '--';
@@ -318,7 +225,6 @@ function updateUI(data) {
     elements.subpeakTemp.textContent = data.weather.subpeakTemp ? `${data.weather.subpeakTemp}°C` : '--°C';
     elements.ripperTemp.textContent = data.weather.ripperTemp ? `${data.weather.ripperTemp}°C` : '--°C';
 
-    // Snow
     elements.snowNew.textContent = data.snow.newSnow ?? 0;
     elements.snowLastHour.textContent = data.snow.lastHour ?? 0;
     elements.snow24h.textContent = data.snow.twentyFourHour ?? 0;
@@ -327,18 +233,9 @@ function updateUI(data) {
     elements.baseDepth.textContent = data.snow.baseDepth ?? 0;
     elements.snowSeason.textContent = data.snow.seasonTotal ?? 0;
 
-    // Store forecast data for mode switching
-    window._lastForecastData = data.forecast;
-
-    // Forecast
     displayForecast(data.forecast);
-    if (isTVMode) {
-        updateVideoForecast(data.forecast);
-        updateTicker();
-    }
 }
 
-// Display forecast in dashboard view
 function displayForecast(forecast) {
     if (!forecast?.length) {
         elements.forecastContent.innerHTML = '<div class="forecast-loading">No forecast data</div>';
@@ -358,7 +255,6 @@ function displayForecast(forecast) {
                 : `<div class="forecast-freezing">${day.freezingLevel}m</div>`;
         }
 
-        // Generate sparkline and trend arrow if history exists
         const hasHistory = day.history?.length > 1;
         const trendArrow = hasHistory ? generateTrendArrow(day.history) : '';
         const sparkline = hasHistory ? `
@@ -383,7 +279,6 @@ function displayForecast(forecast) {
 
     elements.forecastContent.innerHTML = html;
 
-    // Add click handlers to forecast cards
     elements.forecastContent.querySelectorAll('.forecast-day').forEach(card => {
         const index = parseInt(card.dataset.forecastIndex, 10);
         const handler = () => showForecastPopup(forecast[index]);
@@ -397,58 +292,56 @@ function displayForecast(forecast) {
     });
 }
 
-// Display forecast in TV/video view
-function updateVideoForecast(forecast) {
-    if (!elements.videoForecastContent) return;
-
-    if (!forecast?.length) {
-        elements.videoForecastContent.innerHTML = '<div style="color: #999;">No forecast data</div>';
-        return;
-    }
-
-    // Add compact class for 9+ days to prevent overlap with webcams
-    elements.videoForecastContent.classList.toggle('compact', forecast.length > 8);
-
-    let html = '';
-    forecast.forEach(day => {
-        const amount = day.amount || 0;
-        const hasSnow = amount > 0;
-
-        let freezingText = '';
-        if (day.freezingLevel != null) {
-            freezingText = day.freezingLevel === 'valley bottom'
-                ? '<div class="video-forecast-freezing">Bottom</div>'
-                : `<div class="video-forecast-freezing">${day.freezingLevel}m</div>`;
-        }
-
-        // Generate sparkline and trend arrow if history exists
-        const hasHistory = day.history?.length > 1;
-        const trendArrow = hasHistory ? generateTrendArrow(day.history) : '';
-        const sparkline = hasHistory ? `
-            <div class="video-forecast-sparkline">
-                ${generateSparkline(day.history, 36, 14)}
+function showWebcamPopup(imgSrc, alt) {
+    closeWebcamPopup();
+    const overlay = document.createElement('div');
+    overlay.className = 'webcam-popup-overlay';
+    overlay.innerHTML = `
+        <div class="webcam-popup">
+            <div class="webcam-popup-header">
+                <span class="webcam-popup-title">${alt}</span>
+                <button class="popup-close" aria-label="Close">&times;</button>
             </div>
-        ` : '';
-
-        html += `
-            <div class="video-forecast-day ${hasSnow ? 'has-snow' : 'no-snow'}">
-                <div class="video-forecast-day-name">${day.day}</div>
-                <div class="video-forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm ${trendArrow}</div>
-                ${sparkline}
-                ${freezingText}
-            </div>
-        `;
+            <img src="${imgSrc}" alt="${alt}" class="webcam-popup-img">
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.popup-close').addEventListener('click', closeWebcamPopup);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeWebcamPopup();
     });
-
-    elements.videoForecastContent.innerHTML = html;
+    document.addEventListener('keydown', handleWebcamEscape);
+    requestAnimationFrame(() => overlay.classList.add('active'));
 }
 
-// Update webcams with cache-busting
-function updateWebcams(webcamElements = elements.webcams) {
+function closeWebcamPopup() {
+    const overlay = document.querySelector('.webcam-popup-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 200);
+    }
+    document.removeEventListener('keydown', handleWebcamEscape);
+}
+
+function handleWebcamEscape(e) {
+    if (e.key === 'Escape') closeWebcamPopup();
+}
+
+function setupWebcamClicks() {
+    document.querySelectorAll('.webcam-item').forEach(item => {
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', () => {
+            const img = item.querySelector('.webcam-img');
+            if (img && img.src) showWebcamPopup(img.src, img.alt);
+        });
+    });
+}
+
+function updateWebcams() {
     const timestamp = Date.now();
 
     Object.entries(CONFIG.webcams).forEach(([key, baseUrl]) => {
-        const img = webcamElements[key];
+        const img = elements.webcams[key];
         if (!img) return;
 
         const webcamItem = img.closest('.webcam-item');
@@ -466,202 +359,14 @@ function updateWebcams(webcamElements = elements.webcams) {
     });
 }
 
-// Update ticker with current data
-function updateTicker() {
-    if (!elements.tickerContent) return;
-
-    const items = [
-        ['Temperature', `${elements.currentTemp.textContent}°C`],
-        ['Conditions', elements.weatherCondition.textContent],
-        ['Wind', `${elements.windSpeed.textContent} ${elements.windDirection.textContent}`],
-        ['New Snow', `${elements.snowNew.textContent} cm`],
-        ['Last Hour', `${elements.snowLastHour.textContent} cm`],
-        ['24 Hours', `${elements.snow24h.textContent} cm`],
-        ['48 Hours', `${elements.snow48h.textContent} cm`],
-        ['7 Days', `${elements.snow7days.textContent} cm`],
-        ['Base Depth', `${elements.baseDepth.textContent} cm`],
-        ['Season Total', `${elements.snowSeason.textContent} cm`]
-    ];
-
-    const html = items.map(([label, value]) =>
-        `<span class="ticker-item"><span class="ticker-label">${label}:</span><span class="ticker-value">${value}</span></span><span class="ticker-separator"></span>`
-    ).join('');
-
-    // Duplicate for seamless scrolling
-    elements.tickerContent.innerHTML = html + html;
-}
-
-// Build YouTube embed URL for playlist starting at given index
-function buildPlaylistUrl(startIndex) {
-    const videoIds = CONFIG.videoPlaylist.map(v => v.id);
-    // Reorder playlist to start at the selected video
-    const reorderedIds = [...videoIds.slice(startIndex), ...videoIds.slice(0, startIndex)];
-    const firstVideoId = reorderedIds[0];
-    const playlistParam = reorderedIds.join(',');
-    return `https://www.youtube-nocookie.com/embed/${firstVideoId}?autoplay=1&mute=1&loop=1&playlist=${playlistParam}&controls=0`;
-}
-
-// Play specific video by index (reloads iframe with reordered playlist)
-function playVideoByIndex(index) {
-    if (index < 0 || index >= CONFIG.videoPlaylist.length) return;
-
-    currentVideoIndex = index;
-    if (elements.youtubePlayer) {
-        elements.youtubePlayer.src = buildPlaylistUrl(index);
-    }
-    updateVideoSelectorCurrent();
-    closeVideoSelector();
-}
-
-// Update the current video display in selector
-function updateVideoSelectorCurrent() {
-    if (elements.videoSelectorCurrent) {
-        const video = CONFIG.videoPlaylist[currentVideoIndex];
-        elements.videoSelectorCurrent.textContent = video.title;
-    }
-    // Update active state in list
-    const items = elements.videoSelectorList?.querySelectorAll('.video-selector-item');
-    items?.forEach((item, i) => {
-        item.classList.toggle('active', i === currentVideoIndex);
-    });
-}
-
-// Populate video selector list
-function populateVideoSelector() {
-    if (!elements.videoSelectorList) return;
-
-    elements.videoSelectorList.innerHTML = CONFIG.videoPlaylist.map((video, index) => `
-        <button class="video-selector-item ${index === currentVideoIndex ? 'active' : ''}" data-index="${index}">
-            <span class="video-number">${index + 1}</span>
-            <span class="video-title">${video.title}</span>
-        </button>
-    `).join('');
-
-    // Add click handlers
-    elements.videoSelectorList.querySelectorAll('.video-selector-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            const index = parseInt(item.dataset.index, 10);
-            playVideoByIndex(index);
-        });
-    });
-}
-
-// Toggle video selector open/closed
-function toggleVideoSelector() {
-    isVideoSelectorOpen = !isVideoSelectorOpen;
-    elements.videoSelector?.classList.toggle('open', isVideoSelectorOpen);
-}
-
-// Close video selector
-function closeVideoSelector() {
-    isVideoSelectorOpen = false;
-    elements.videoSelector?.classList.remove('open');
-}
-
-// Setup video selector event listeners
-function setupVideoSelector() {
-    if (!elements.videoSelectorToggle) return;
-
-    elements.videoSelectorToggle.addEventListener('click', toggleVideoSelector);
-
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-        if (isVideoSelectorOpen && !elements.videoSelector?.contains(e.target)) {
-            closeVideoSelector();
-        }
-    });
-
-    populateVideoSelector();
-    updateVideoSelectorCurrent();
-}
-
-// Refresh all data
-async function refreshAllData() {
+async function init() {
     await fetchSnowReport();
     updateWebcams();
-    if (isTVMode) {
-        updateWebcams(elements.videoWebcams);
-    }
-}
-
-// Switch between TV and Dashboard mode without reloading
-function switchMode(toTVMode) {
-    if (isTVMode === toTVMode) return;
-
-    isTVMode = toTVMode;
-
-    // Update URL without reload
-    const newUrl = toTVMode ? '?tv' : '/';
-    history.pushState({ tvMode: toTVMode }, '', newUrl);
-
-    if (isTVMode) {
-        elements.videoView?.classList.add('active');
-        elements.dashboardView?.classList.remove('active');
-        elements.tickerContainer?.classList.add('active');
-        setupVideoSelector();
-        // Update TV-specific elements with existing data
-        updateWebcams(elements.videoWebcams);
-        updateTicker();
-        // Re-render TV forecast from dashboard data
-        const forecastDays = document.querySelectorAll('#forecast-content .forecast-day');
-        if (forecastDays.length && window._lastForecastData) {
-            updateVideoForecast(window._lastForecastData);
-        }
-    } else {
-        elements.videoView?.classList.remove('active');
-        elements.dashboardView?.classList.add('active');
-        elements.tickerContainer?.classList.remove('active');
-    }
-}
-
-// Setup mode switching links
-function setupModeSwitching() {
-    // Intercept TV mode link clicks
-    document.querySelectorAll('a[href="?tv"]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchMode(true);
-        });
-    });
-
-    // Intercept dashboard link clicks (from TV warning or elsewhere)
-    document.querySelectorAll('a[href="/"]').forEach(link => {
-        // Skip external links, only handle internal navigation
-        if (link.closest('.video-view') || link.closest('.top-nav')) {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                switchMode(false);
-            });
-        }
-    });
-
-    // Handle browser back/forward
-    window.addEventListener('popstate', (e) => {
-        const toTVMode = e.state?.tvMode ?? new URLSearchParams(window.location.search).has('tv');
-        switchMode(toTVMode);
-    });
-}
-
-// Initialize
-async function init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    isTVMode = urlParams.has('tv');
-
-    await refreshAllData();
-    refreshTimer = setInterval(refreshAllData, CONFIG.refreshInterval);
-
-    if (isTVMode) {
-        elements.videoView?.classList.add('active');
-        elements.dashboardView?.classList.remove('active');
-        elements.tickerContainer?.classList.add('active');
-        setupVideoSelector();
-    } else {
-        elements.videoView?.classList.remove('active');
-        elements.dashboardView?.classList.add('active');
-        elements.tickerContainer?.classList.remove('active');
-    }
-
-    setupModeSwitching();
+    setupWebcamClicks();
+    refreshTimer = setInterval(() => {
+        fetchSnowReport();
+        updateWebcams();
+    }, CONFIG.refreshInterval);
 }
 
 if (document.readyState === 'loading') {

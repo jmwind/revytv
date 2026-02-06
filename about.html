@@ -6,12 +6,12 @@
     <meta name="description" content="About Revy Snow for Nerds - The obsessive snow tracker">
     <title>About | Revy Snow for Nerds</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=45">
+    <link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body class="about-page">
     <div class="about-container">
         <nav class="top-nav">
-            <div class="nav-brand">
+            <a href="/" class="nav-brand">
                 <svg class="nav-logo" viewBox="0 0 100 100">
                     <g stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round">
                         <line x1="50" y1="10" x2="50" y2="90" />
@@ -24,12 +24,18 @@
                         <line x1="50" y1="80" x2="60" y2="70" />
                     </g>
                 </svg>
-                <span class="nav-title">Revy Snow for Nerds</span>
-            </div>
+                <span class="nav-title">Snow for Nerds</span>
+            </a>
             <div class="nav-menu">
-                <a href="/" class="nav-link">Dashboard</a>
-                <a href="?tv" class="nav-link">TV Mode</a>
-                <a href="/calendar.html" class="nav-link">Yearly Stats</a>
+                <div class="nav-dropdown-wrap">
+                    <button class="nav-link nav-pro-btn">Pro</button>
+                    <div class="nav-pro-dropdown">
+                        <a href="/tv.html" class="nav-dropdown-item">TV Mode</a>
+                        <a href="/calendar.html" class="nav-dropdown-item">Yearly Stats</a>
+                    </div>
+                </div>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/settings.html" class="nav-link nav-link-auth" style="display:none">Settings</a>
             </div>
         </nav>
 
@@ -90,5 +96,7 @@
             <p>Made with obsessive attention to snowfall in Revelstoke, BC</p>
         </footer>
     </div>
+
+    <script src="auth.js" async></script>
 </body>
 </html>

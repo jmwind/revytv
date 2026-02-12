@@ -66,11 +66,23 @@ module.exports = async function handler(req, res) {
     }
 };
 
+const RESORT_TIMEZONE = 'America/Vancouver';
+
+// Get the local date at the resort as a UTC-midnight Date object
+function getLocalDate(referenceDate) {
+    const localDateStr = new Intl.DateTimeFormat('en-CA', {
+        timeZone: RESORT_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(referenceDate);
+    return new Date(localDateStr + 'T00:00:00Z');
+}
+
 // Convert day name to actual date + period suffix for Today/Tonight
 // weekOffset handles 10-day forecasts where day names repeat (second occurrence = next week)
 function dayNameToDateKey(dayName, referenceDate = new Date(), weekOffset = 0) {
-    const today = new Date(referenceDate);
-    today.setUTCHours(0, 0, 0, 0);
+    const today = getLocalDate(referenceDate);
 
     if (dayName === 'Today') {
         const d = new Date(today);

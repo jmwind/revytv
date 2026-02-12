@@ -163,6 +163,7 @@ function renderSnowfallChart(year) {
 let currentYear = new Date().getFullYear();
 let calendarData = {};
 let snowfallData = {};
+let newSnowData = {};
 
 // Fetch calendar data from API
 async function fetchCalendarData(year) {
@@ -171,10 +172,12 @@ async function fetchCalendarData(year) {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         snowfallData = result.snowfall || {};
+        newSnowData = result.newSnow || {};
         return result.data || {};
     } catch (error) {
         console.error('Error fetching calendar data:', error);
         snowfallData = {};
+        newSnowData = {};
         return {};
     }
 }
@@ -233,12 +236,30 @@ function renderDayCell(year, month, day, data) {
 
     // Data is now merged by date in the API
     const effectiveData = data[dateStr];
+    const actual = newSnowData[dateStr];
+    const actualHtml = actual
+        ? `<span class="actual-snow">${actual.newSnow}<span class="cm">cm</span></span>`
+        : '';
     const flatSparkline = generateMiniSparkline(null);
+    const hasForecast = effectiveData && effectiveData.history && effectiveData.history.length > 0;
 
-    if (!effectiveData || !effectiveData.history || effectiveData.history.length === 0) {
+    if (!hasForecast && !actual) {
         return `
             <div class="day-cell no-data">
                 <span class="day-number">${day}</span>
+                <span class="snow-amount">-<span class="cm">cm</span></span>
+                ${flatSparkline}
+                <span class="delta-badge">-</span>
+            </div>
+        `;
+    }
+
+    if (!hasForecast) {
+        // Actual snow only, no forecast
+        return `
+            <div class="day-cell has-actual">
+                <span class="day-number">${day}</span>
+                ${actualHtml}
                 <span class="snow-amount">-<span class="cm">cm</span></span>
                 ${flatSparkline}
                 <span class="delta-badge">-</span>
@@ -250,11 +271,13 @@ function renderDayCell(year, month, day, data) {
     const sparkline = generateMiniSparkline(effectiveData.history);
     const deltaText = formatDelta(effectiveData.delta);
     const lastAmount = effectiveData.lastAmount;
-    const title = `${dateStr}: ${effectiveData.firstAmount}cm → ${lastAmount}cm (${effectiveData.historyCount} updates)`;
+    const actualTitle = actual ? ` | Actual: ${actual.newSnow}cm` : '';
+    const title = `${dateStr}: ${effectiveData.firstAmount}cm → ${lastAmount}cm (${effectiveData.historyCount} updates)${actualTitle}`;
 
     return `
         <div class="day-cell ${deltaClass}" title="${title}">
             <span class="day-number">${day}</span>
+            ${actualHtml}
             <span class="snow-amount">${lastAmount}<span class="cm">cm</span></span>
             ${sparkline}
             <span class="delta-badge">${deltaText}</span>
@@ -301,12 +324,12 @@ function renderMonth(year, month, data) {
     `;
 }
 
-// Check if a month has any data (forecast or snowfall)
+// Check if a month has any data (forecast, snowfall, or new snow)
 function monthHasData(year, month, data) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        if (data[dateStr] || snowfallData[dateStr]) {
+        if (data[dateStr] || snowfallData[dateStr] || newSnowData[dateStr]) {
             return true;
         }
     }

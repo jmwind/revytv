@@ -98,12 +98,31 @@ module.exports = async function handler(req, res) {
             };
         }
 
+        // Get daily new snow actuals for the year
+        const allNewSnow = await storage.getAllByPrefix('newsnow:');
+        const newSnowData = {};
+
+        for (const [key, record] of Object.entries(allNewSnow)) {
+            if (!record || !record.date) continue;
+
+            const recordYear = parseInt(record.date.substring(0, 4));
+            if (recordYear !== year) continue;
+
+            newSnowData[record.date] = {
+                date: record.date,
+                newSnow: record.newSnow,
+                recordedAt: record.recordedAt
+            };
+        }
+
         return res.status(200).json({
             year: year,
             data: yearData,
             snowfall: snowfallData,
+            newSnow: newSnowData,
             count: Object.keys(yearData).length,
             snowfallCount: Object.keys(snowfallData).length,
+            newSnowCount: Object.keys(newSnowData).length,
             fetchedAt: new Date().toISOString(),
             storageMode: storage.useUpstash() ? 'upstash-redis' : 'local-json'
         });

@@ -263,10 +263,15 @@ function displayForecast(forecast) {
             </div>
         ` : '';
 
+        const weatherIcon = getWeatherIcon(day.description, amount);
+
         html += `
             <div class="forecast-day ${hasSnow ? 'has-snow' : 'no-snow'}" data-forecast-index="${index}" role="button" tabindex="0">
                 <div class="forecast-day-content">
-                    <span class="forecast-date">${day.day}</span>
+                    <div class="forecast-day-header">
+                        <span class="forecast-date">${day.day}</span>
+                        ${weatherIcon}
+                    </div>
                     <span class="forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm ${trendArrow}</span>
                 </div>
                 ${sparkline}

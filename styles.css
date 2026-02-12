@@ -1006,6 +1006,37 @@ body {
     gap: 4px;
 }
 
+.forecast-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Weather Icons */
+.weather-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.weather-icon-sun { color: #fbbf24; }
+.weather-icon-cloud { color: #94a3b8; }
+.weather-icon-flurries { color: #93c5fd; }
+.weather-icon-snow { color: #e2e8f0; }
+
+/* TV forecast weather icons */
+.video-forecast-day .weather-icon {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0;
+}
+
+.video-forecast-content.compact .weather-icon {
+    width: 14px;
+    height: 14px;
+}
+
 .forecast-date {
     font-family: var(--font-mono);
     font-size: 0.75rem;

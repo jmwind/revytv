@@ -88,9 +88,12 @@ function updateVideoForecast(forecast) {
             </div>
         ` : '';
 
+        const weatherIcon = getWeatherIcon(day.description, amount);
+
         html += `
             <div class="video-forecast-day ${hasSnow ? 'has-snow' : 'no-snow'}">
                 <div class="video-forecast-day-name">${day.day}</div>
+                ${weatherIcon}
                 <div class="video-forecast-amount ${hasSnow ? '' : 'zero'}">${amount} cm ${trendArrow}</div>
                 ${sparkline}
                 ${freezingText}

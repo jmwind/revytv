@@ -53,9 +53,8 @@ function renderSnowfallChart(year) {
     const totalEl = document.getElementById('chart-total');
     const chartEl = document.getElementById('snowfall-chart');
 
-    // Convert snowfall data to sorted array
+    // Convert snowfall data to sorted array (API returns full season including prior fall)
     const dataPoints = Object.values(snowfallData)
-        .filter(d => d.date.startsWith(String(year)))
         .sort((a, b) => a.date.localeCompare(b.date));
 
     if (dataPoints.length === 0) {
@@ -85,12 +84,14 @@ function renderSnowfallChart(year) {
     const minVal = 0;
     const valRange = maxVal - minVal || 1;
 
-    // Generate path points
-    const points = dataPoints.map(d => {
+    // Generate path points with daily change
+    const points = dataPoints.map((d, i) => {
         const date = new Date(d.date);
         const x = padding.left + ((date - minDate) / dateRange) * chartWidth;
         const y = padding.top + chartHeight - ((d.seasonTotal - minVal) / valRange) * chartHeight;
-        return { x, y, date: d.date, value: d.seasonTotal };
+        const prev = i > 0 ? dataPoints[i - 1].seasonTotal : d.seasonTotal;
+        const change = d.seasonTotal - prev;
+        return { x, y, date: d.date, value: d.seasonTotal, change };
     });
 
     const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
@@ -115,8 +116,9 @@ function renderSnowfallChart(year) {
         }
     });
 
-    // Render SVG
+    // Render SVG + tooltip
     container.innerHTML = `
+        <div class="chart-tooltip" id="chart-tooltip"></div>
         <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
             <defs>
                 <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -126,11 +128,36 @@ function renderSnowfallChart(year) {
             </defs>
             <path d="${areaD}" fill="url(#areaGradient)" />
             <path d="${pathD}" fill="none" stroke="#4ade80" stroke-width="2" />
-            ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#4ade80" class="chart-point"><title>${p.date}: ${p.value}cm</title></circle>`).join('')}
+            ${points.map((p, i) => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#4ade80" class="chart-point" data-idx="${i}"></circle>`).join('')}
             ${yLabels}
             ${monthLabels.join('')}
         </svg>
     `;
+
+    // Attach tooltip events
+    const tooltip = container.querySelector('#chart-tooltip');
+    container.querySelectorAll('.chart-point').forEach(circle => {
+        const idx = parseInt(circle.dataset.idx);
+        const p = points[idx];
+        const dateObj = new Date(p.date + 'T00:00:00');
+        const label = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const changeStr = p.change > 0 ? `+${p.change}` : p.change === 0 ? '—' : String(p.change);
+
+        circle.addEventListener('mouseenter', (e) => {
+            tooltip.innerHTML = `<strong>${label}</strong><br>${p.value} cm <span class="chart-tooltip-change">${changeStr}</span>`;
+            tooltip.classList.add('visible');
+        });
+        circle.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y - 40}px`;
+        });
+        circle.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('visible');
+        });
+    });
 }
 
 let currentYear = new Date().getFullYear();

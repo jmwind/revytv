@@ -75,15 +75,21 @@ module.exports = async function handler(req, res) {
             };
         }
 
-        // Get snowfall history for the year
+        // Get snowfall history for the full ski season (Oct of prior year through current year)
         const allSnowfall = await storage.getAllByPrefix('snowfall:');
         const snowfallData = {};
 
+        const seasonStartMonth = 10; // October
         for (const [key, record] of Object.entries(allSnowfall)) {
             if (!record || !record.date) continue;
 
             const recordYear = parseInt(record.date.substring(0, 4));
-            if (recordYear !== year) continue;
+            const recordMonth = parseInt(record.date.substring(5, 7));
+
+            // Include: current year's data OR previous year's Oct-Dec (season start)
+            const isCurrentYear = recordYear === year;
+            const isPreviousFall = recordYear === year - 1 && recordMonth >= seasonStartMonth;
+            if (!isCurrentYear && !isPreviousFall) continue;
 
             snowfallData[record.date] = {
                 date: record.date,

@@ -67,35 +67,41 @@ module.exports = async function handler(req, res) {
 };
 
 // Convert day name to actual date + period suffix for Today/Tonight
-function dayNameToDateKey(dayName, referenceDate = new Date()) {
+// weekOffset handles 10-day forecasts where day names repeat (second occurrence = next week)
+function dayNameToDateKey(dayName, referenceDate = new Date(), weekOffset = 0) {
     const today = new Date(referenceDate);
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
 
     if (dayName === 'Today') {
-        return { date: formatDate(today), key: `${formatDate(today)}:day` };
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() + weekOffset * 7);
+        return { date: formatDate(d), key: `${formatDate(d)}:day` };
     }
 
     if (dayName === 'Tonight') {
-        return { date: formatDate(today), key: `${formatDate(today)}:night` };
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() + weekOffset * 7);
+        return { date: formatDate(d), key: `${formatDate(d)}:night` };
     }
 
     const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const todayIndex = today.getDay();
+    const todayIndex = today.getUTCDay();
     const targetIndex = weekdays.indexOf(dayName);
 
     if (targetIndex === -1) return null;
 
     let daysUntil = targetIndex - todayIndex;
     if (daysUntil <= 0) daysUntil += 7; // Next week
+    daysUntil += weekOffset * 7;
 
     const targetDate = new Date(today);
-    targetDate.setDate(targetDate.getDate() + daysUntil);
+    targetDate.setUTCDate(targetDate.getUTCDate() + daysUntil);
 
     return { date: formatDate(targetDate), key: formatDate(targetDate) };
 }
 
 function formatDate(date) {
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD (UTC)
 }
 
 // Store daily season total (once per day)
@@ -136,9 +142,13 @@ async function storeNewSnow(newSnow, fetchedAt) {
 // Track forecast history - only store changes
 async function trackForecastHistory(forecasts, fetchedAt) {
     const updatedForecasts = [];
+    const seenDayNames = new Map(); // track occurrences for duplicate day names
 
     for (const forecast of forecasts) {
-        const dateInfo = dayNameToDateKey(forecast.day);
+        const occurrence = seenDayNames.get(forecast.day) || 0;
+        seenDayNames.set(forecast.day, occurrence + 1);
+
+        const dateInfo = dayNameToDateKey(forecast.day, new Date(), occurrence);
         if (!dateInfo) {
             updatedForecasts.push(forecast);
             continue;
@@ -179,8 +189,8 @@ async function trackForecastHistory(forecasts, fetchedAt) {
             await storage.set(storageKey, record);
         }
 
-        // Fetch all related records for this date and merge histories
-        const mergedHistory = await getMergedHistoryForDate(dateInfo.date);
+        // Merge plain (weekday) history with this period's, but not across day/night
+        const mergedHistory = await getMergedHistoryForDate(dateInfo.date, dateInfo.key);
 
         // Add merged history and date to forecast response
         updatedForecasts.push({
@@ -193,13 +203,16 @@ async function trackForecastHistory(forecasts, fetchedAt) {
     return updatedForecasts;
 }
 
-// Fetch and merge all history records for a date (plain, :day, :night)
-async function getMergedHistoryForDate(dateStr) {
-    const keys = [
-        `forecast:${dateStr}`,
-        `forecast:${dateStr}:day`,
-        `forecast:${dateStr}:night`
-    ];
+// Merge history for a date: plain (weekday) key + the specific period key
+// Avoids cross-contamination between :day and :night entries
+async function getMergedHistoryForDate(dateStr, currentKey) {
+    // Always include the plain key (from when it was a weekday name like "Wednesday")
+    const keys = [`forecast:${dateStr}`];
+
+    // Also include the specific day/night key if it differs from the plain key
+    if (currentKey !== dateStr) {
+        keys.push(`forecast:${currentKey}`);
+    }
 
     const allHistory = [];
 
@@ -303,6 +316,7 @@ function extractForecast(html) {
     return forecast;
 }
 
-// Export parsing functions for testing
+// Export functions for testing
 module.exports.extractForecast = extractForecast;
 module.exports.parseSnowReport = parseSnowReport;
+module.exports.dayNameToDateKey = dayNameToDateKey;

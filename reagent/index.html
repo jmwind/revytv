@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reagent — PRD v1.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --surface: #FAF8F4;
+    --surface-2: #F2EFE8;
+    --ink: #0A0A0A;
+    --ink-2: #3A3A3A;
+    --ink-3: #6B6B6B;
+    --rule: #E5E2DA;
+    --rule-strong: #1A1A1A;
+    --accent: #FFD400;
+    --accent-soft: #FFF3B0;
+    --danger: #E5462E;
+    --ok: #2E7D54;
+    --code-bg: #0E0E0E;
+    --code-ink: #F5F1E6;
+    --code-comment: #8A8276;
+    --code-key: #FFD400;
+    --code-string: #B8E0A4;
+    --code-num: #F5A572;
+    --radius-s: 3px;
+    --radius-m: 8px;
+    --radius-l: 14px;
+    --maxw: 880px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Header / Hero */
+  .hero {
+    background: var(--ink);
+    color: var(--code-ink);
+    padding: 72px 32px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: 0; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle at center, var(--accent) 0%, transparent 60%);
+    opacity: 0.22;
+    pointer-events: none;
+  }
+  .hero-inner { max-width: var(--maxw); margin: 0 auto; position: relative; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(64px, 9vw, 128px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    margin: 0 0 20px;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(20px, 2.4vw, 26px);
+    line-height: 1.4;
+    color: rgba(245, 241, 230, 0.78);
+    max-width: 640px;
+    margin: 0 0 40px;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 24px;
+    border-top: 1px solid rgba(245, 241, 230, 0.18);
+    padding-top: 28px;
+    max-width: 720px;
+  }
+  .meta-cell .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 230, 0.55);
+    margin-bottom: 6px;
+  }
+  .meta-cell .value {
+    font-size: 14px;
+    color: var(--code-ink);
+    font-weight: 500;
+  }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+    padding: 40px 32px;
+  }
+  .toc-inner { max-width: var(--maxw); margin: 0 auto; }
+  .toc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 18px;
+  }
+  .toc-list {
+    columns: 2;
+    column-gap: 40px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+  }
+  .toc-list li {
+    margin: 0 0 8px;
+    break-inside: avoid;
+  }
+  .toc-list a {
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 2px 0;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s;
+  }
+  .toc-list a:hover { border-bottom-color: var(--ink); }
+  .toc-list .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    min-width: 24px;
+  }
+
+  /* Main content */
+  main { padding: 72px 32px 96px; }
+  .container { max-width: var(--maxw); margin: 0 auto; }
+
+  section { margin-bottom: 64px; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(32px, 4.4vw, 44px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px;
+    font-variation-settings: "opsz" 80, "SOFT" 30;
+  }
+  h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 40px 0 14px;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-2);
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 16px; color: var(--ink-2); }
+  strong { color: var(--ink); font-weight: 600; }
+  em { font-style: italic; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; color: var(--ink-2); }
+  ul li, ol li { margin-bottom: 8px; }
+  a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+  /* Inline code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: var(--surface-2);
+    color: var(--ink);
+    padding: 2px 6px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--rule);
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 24px 28px;
+    border-radius: var(--radius-m);
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin: 24px 0 32px;
+    position: relative;
+  }
+  pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+  .code-label {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 230, 0.45);
+  }
+  /* YAML token approximations using spans */
+  pre .k { color: var(--code-key); }
+  pre .s { color: var(--code-string); }
+  pre .n { color: var(--code-num); }
+  pre .c { color: var(--code-comment); font-style: italic; }
+  pre .p { color: #B0B0B0; }
+
+  /* Callouts */
+  .callout {
+    background: var(--surface);
+    border-left: 3px solid var(--ink);
+    border-radius: 0 var(--radius-m) var(--radius-m) 0;
+    padding: 22px 26px;
+    margin: 24px 0;
+  }
+  .callout.accent { border-left-color: var(--accent); background: var(--accent-soft); }
+  .callout.danger { border-left-color: var(--danger); }
+  .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* Failure tax cards */
+  .tax-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 24px 0 16px;
+  }
+  .tax-card {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+    padding: 22px 22px 20px;
+  }
+  .tax-card .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: var(--radius-s);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .tax-card.missing .tag { background: var(--danger); color: white; }
+  .tax-card.stale .tag { background: var(--accent); color: var(--ink); }
+  .tax-card.reason .tag { background: var(--ink); color: white; }
+  .tax-card h5 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .tax-card p { font-size: 14px; margin: 0; color: var(--ink-2); }
+
+  /* Vocab table */
+  .vocab {
+    border-top: 1px solid var(--rule);
+    margin: 24px 0;
+  }
+  .vocab-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .vocab-term {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .vocab-def {
+    font-size: 15px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  .vocab-def .old {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    background: var(--surface-2);
+    padding: 2px 7px;
+    border-radius: var(--radius-s);
+    margin-left: 6px;
+    text-decoration: line-through;
+  }
+
+  /* Phase / roadmap timeline */
+  .phases { margin: 24px 0; }
+  .phase {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 28px;
+    padding: 20px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .phase:last-child { border-bottom: 1px solid var(--rule); }
+  .phase-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .phase-label strong {
+    display: block;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    color: var(--ink);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .phase-body { font-size: 15px; }
+  .phase-body h4 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Stat / north-star block */
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    background: var(--ink);
+    color: var(--code-ink);
+    padding: 28px 32px;
+    border-radius: var(--radius-m);
+    margin: 20px 0 28px;
+  }
+  .stat-number {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .stat-text { font-size: 15px; line-height: 1.4; color: rgba(245,241,230,0.85); }
+  .stat-text strong { color: var(--code-ink); font-weight: 600; }
+
+  /* Web tool mockups (browser-style frames) */
+  .mockup {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+    background: var(--bg);
+    overflow: hidden;
+    margin: 24px 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  }
+  .mockup-chrome {
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mockup-dots { display: flex; gap: 6px; }
+  .mockup-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--rule);
+  }
+  .mockup-url {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-s);
+    padding: 5px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-left: 4px;
+  }
+  .mockup-body { padding: 28px; }
+  .mockup-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .mockup-h {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 0 0 16px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .mockup-textarea {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-s);
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .mockup-textarea em { color: var(--ink-3); font-style: italic; }
+  .mockup-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ink);
+    color: var(--code-ink);
+    border: none;
+    border-radius: var(--radius-s);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+  }
+  .mockup-btn.accent { background: var(--accent); color: var(--ink); }
+  .mockup-btn.ghost { background: transparent; border: 1px solid var(--rule); color: var(--ink); }
+  .mockup-btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .mockup-draft {
+    margin-top: 22px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-s);
+    overflow: hidden;
+  }
+  .mockup-draft-head {
+    background: var(--surface);
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .mockup-draft-body { padding: 14px 16px; font-size: 14px; }
+  .mockup-field {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .mockup-field:last-child { border-bottom: none; }
+  .mockup-field .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .mockup-field .val {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+  .mockup-field .val code { font-size: 12px; }
+  .mockup-chip {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    margin-right: 4px;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .mockup-chip.accent { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+
+  /* Visual builder mockup */
+  .builder-steps {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .builder-step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 6px 10px;
+    border-radius: var(--radius-s);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+  .builder-step.active {
+    background: var(--ink);
+    color: var(--accent);
+    border-color: var(--ink);
+  }
+  .builder-step.done {
+    color: var(--ink);
+    background: var(--bg);
+  }
+  .builder-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 22px;
+  }
+  @media (max-width: 700px) { .builder-grid { grid-template-columns: 1fr; } }
+  .builder-form .field {
+    display: block;
+    margin-bottom: 14px;
+  }
+  .builder-form label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+  .builder-form .input {
+    width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-s);
+    padding: 9px 12px;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+  }
+  .builder-form .input.with-ac {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .ac-list {
+    border: 1px solid var(--ink);
+    border-top: none;
+    border-radius: 0 0 var(--radius-s) var(--radius-s);
+    background: var(--bg);
+    margin-top: -1px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .ac-item {
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item.hl { background: var(--accent-soft); }
+  .ac-meta { color: var(--ink-3); font-size: 11px; }
+  .builder-preview {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: var(--radius-s);
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+  }
+  .builder-preview-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(245,241,230,0.5);
+    margin-bottom: 10px;
+  }
+
+  /* Slack mockup */
+  .slack {
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+    margin: 24px 0;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  .slack-chrome {
+    background: #3F0E40;
+    color: white;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .slack-chrome-w {
+    background: rgba(255,255,255,0.16);
+    border-radius: var(--radius-s);
+    padding: 3px 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 600;
+  }
+  .slack-channel-bar {
+    border-bottom: 1px solid #E1E1E1;
+    padding: 12px 22px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    background: white;
+  }
+  .slack-channel-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: #1D1C1D;
+  }
+  .slack-channel-name::before { content: "# "; color: #696969; font-weight: 400; }
+  .slack-channel-topic {
+    font-size: 13px;
+    color: #696969;
+  }
+  .slack-feed { padding: 8px 0; }
+  .slack-msg {
+    padding: 8px 22px 8px 22px;
+    display: flex;
+    gap: 12px;
+    position: relative;
+  }
+  .slack-msg:hover { background: #F8F8F8; }
+  .slack-avatar {
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .av-bot { background: linear-gradient(135deg, #FFD400, #FFA000); color: #1D1C1D; }
+  .av-maria { background: #C7396C; }
+  .av-mike { background: #2E7D54; }
+  .av-priya { background: #1264A3; }
+  .slack-msg-body { flex: 1; min-width: 0; }
+  .slack-msg-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .slack-msg-name { font-weight: 700; font-size: 15px; color: #1D1C1D; }
+  .slack-msg-name.bot::after {
+    content: "APP";
+    font-size: 10px;
+    background: #E1E1E1;
+    color: #1D1C1D;
+    padding: 1px 4px;
+    border-radius: 2px;
+    margin-left: 6px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    vertical-align: 2px;
+  }
+  .slack-msg-time { font-size: 12px; color: #696969; }
+  .slack-msg-text {
+    font-size: 14.5px;
+    color: #1D1C1D;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+  .slack-msg-text code {
+    background: #F4EDE4;
+    border: 1px solid #E6DDD0;
+    color: #A02E2E;
+    font-size: 12.5px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .slack-msg-text a { color: #1264A3; text-decoration: none; text-decoration-color: transparent; }
+  .slack-msg-text a:hover { text-decoration: underline; text-decoration-color: #1264A3; }
+
+  .slack-card {
+    border: 1px solid #E1E1E1;
+    border-left: 4px solid #FFD400;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    background: #FFFEFB;
+    font-size: 14px;
+  }
+  .slack-card-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .reagent-verified {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--accent-soft);
+    border: 1px solid #E6C300;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1D1C1D;
+  }
+  .reagent-verified::before { content: "✓"; font-weight: 700; }
+  .slack-card-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #696969;
+  }
+  .slack-card-rows {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #1D1C1D;
+  }
+  .slack-card-rows .num { color: #1D1C1D; font-weight: 600; }
+  .slack-card-foot {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #E6DDD0;
+    font-size: 12px;
+    color: #696969;
+    display: flex; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .slack-card-foot a { color: #1264A3; }
+
+  .slack-alert {
+    border: 1px solid #E6C300;
+    border-left: 4px solid #E6C300;
+    border-radius: 6px;
+    background: #FFF9E0;
+    padding: 12px 14px;
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  .slack-alert.danger {
+    border-color: var(--danger);
+    border-left-color: var(--danger);
+    background: #FFF4F1;
+  }
+  .slack-alert .alert-head {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 13.5px;
+    color: #1D1C1D;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .slack-alert .alert-body {
+    font-size: 13.5px;
+    color: #1D1C1D;
+    line-height: 1.5;
+  }
+  .slack-reactions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .slack-rxn {
+    background: #F0F8FF;
+    border: 1px solid #C8E0F4;
+    border-radius: 12px;
+    padding: 0 7px;
+    font-size: 12px;
+    color: #1264A3;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+  }
+  .slack-thread {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #1264A3;
+    font-weight: 600;
+  }
+  .slack-thread::before { content: "💬 "; }
+  .slack-divider {
+    border: none;
+    height: 1px;
+    background: #E1E1E1;
+    margin: 6px 22px;
+  }
+  .slack-day-divider {
+    text-align: center;
+    margin: 8px 22px;
+    font-size: 11px;
+    color: #696969;
+    border-top: 1px solid #E1E1E1;
+    padding-top: 6px;
+    font-weight: 600;
+  }
+
+  /* Example list */
+  .examples-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 22px 0;
+  }
+  .example-pill {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+    padding: 16px 18px;
+  }
+  .example-pill .q {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 0 0 8px;
+  }
+  .example-pill .kind {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* Diagram */
+  .arch {
+    background: var(--surface);
+    border-radius: var(--radius-m);
+    padding: 32px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .arch-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .arch-node {
+    background: var(--bg);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-m);
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .arch-node.accent { background: var(--accent); border-color: var(--ink); }
+  .arch-arrow {
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .arch-caption {
+    font-size: 13px;
+    color: var(--ink-3);
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--rule);
+    background: var(--surface);
+    padding: 40px 32px;
+    text-align: center;
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  footer .brand {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  /* Print */
+  @media print {
+    .hero { padding: 32px; }
+    .hero::before { display: none; }
+    main { padding: 32px; }
+    pre { font-size: 11px; padding: 14px; }
+    section { margin-bottom: 32px; page-break-inside: avoid; }
+    .toc { display: none; }
+    h2 { page-break-after: avoid; }
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .toc-list { columns: 1; }
+    .phase { grid-template-columns: 1fr; gap: 8px; }
+    .vocab-row { grid-template-columns: 1fr; gap: 4px; }
+    main { padding: 48px 20px 64px; }
+    .hero { padding: 56px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Spellbook · Internal · Draft v1.1</div>
+    <h1>Reagent<em>.</em></h1>
+    <p class="hero-sub">
+      The context every agent needs, catalogued and verified. So that decisions at Spellbook happen at the speed of asking.
+    </p>
+    <div class="meta-grid">
+      <div class="meta-cell">
+        <div class="label">Owner</div>
+        <div class="value">Jean-Michel</div>
+      </div>
+      <div class="meta-cell">
+        <div class="label">Status</div>
+        <div class="value">Draft for implementing agent</div>
+      </div>
+      <div class="meta-cell">
+        <div class="label">Version</div>
+        <div class="value">1.1</div>
+      </div>
+      <div class="meta-cell">
+        <div class="label">Last updated</div>
+        <div class="value">2026-05-14</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="toc-inner">
+    <p class="toc-title">Contents</p>
+    <ol class="toc-list">
+      <li><a href="#tldr"><span class="num">01</span><span>TL;DR</span></a></li>
+      <li><a href="#why"><span class="num">02</span><span>Why this matters</span></a></li>
+      <li><a href="#vocab"><span class="num">03</span><span>Vocabulary</span></a></li>
+      <li><a href="#users"><span class="num">04</span><span>Primary users</span></a></li>
+      <li><a href="#metrics"><span class="num">05</span><span>Success metrics</span></a></li>
+      <li><a href="#concepts"><span class="num">06</span><span>Core concepts</span></a></li>
+      <li><a href="#spec"><span class="num">07</span><span>What an eval looks like</span></a></li>
+      <li><a href="#examples"><span class="num">08</span><span>Example evals, simplest first</span></a></li>
+      <li><a href="#exec"><span class="num">09</span><span>Execution model</span></a></li>
+      <li><a href="#authoring"><span class="num">10</span><span>The authoring tool</span></a></li>
+      <li><a href="#life"><span class="num">11</span><span>Life with Reagent</span></a></li>
+      <li><a href="#governance"><span class="num">12</span><span>Governance &amp; promotion</span></a></li>
+      <li><a href="#cadence"><span class="num">13</span><span>Cadence &amp; triggers</span></a></li>
+      <li><a href="#pilot"><span class="num">14</span><span>Pilot scope</span></a></li>
+      <li><a href="#roadmap"><span class="num">15</span><span>Roadmap</span></a></li>
+      <li><a href="#scope"><span class="num">16</span><span>Out of scope</span></a></li>
+      <li><a href="#risks"><span class="num">17</span><span>Dependencies &amp; risks</span></a></li>
+      <li><a href="#open"><span class="num">18</span><span>Open questions</span></a></li>
+      <li><a href="#done"><span class="num">19</span><span>Definition of done</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+<div class="container">
+
+<section id="tldr">
+  <div class="section-num">01 — TL;DR</div>
+  <h2>The shortest possible version.</h2>
+  <p>
+    <strong>Reagent</strong> is Spellbook's internal program for making every team and every internal agent faster, by guaranteeing the context they need to do their work is <strong>available, accurate, and useful</strong>. Reagent treats context as an ingredient: a reagent in a chemistry experiment, an input with a known source, freshness, and purity, without which the work fails. The name is a deliberate pun: in this project, an <strong>agent</strong> is only as good as its <strong>re-agents</strong>.
+  </p>
+  <p>
+    Reagent is operationalized as a growing, version-controlled library of <strong>evals</strong> — small executable tests that pair a real business question with the canonical answer and the context the agent should have consulted to produce it. When an eval fails, Reagent classifies <em>why</em>: missing context, stale or incorrect context, or a reasoning error inside the agent. The first two open tickets against the source team. Over time, that ticket stream becomes the de-facto roadmap for the company's data bus.
+  </p>
+  <p>
+    The implementing team's job is to ship the eval format, the runtime that executes evals against real agents, the web authoring tool that lets any team (technical or not) contribute their own, and the dashboard that turns failures into a prioritized backlog. The pilot spans <strong>Sales and Finance</strong> over one quarter.
+  </p>
+</section>
+
+<section id="why">
+  <div class="section-num">02 — Why this matters</div>
+  <h2>Today, knowing what we know is paid for over and over.</h2>
+  <p>
+    Every decision at Spellbook gets faster when the person, or the agent, making it has the right context within reach. Today that context is fragmented across warehouses, Notion, Drive, Slack, email, ticketing systems, and people's heads. Even where it exists, it is often stale, ambiguously named, or in a format that can't be consumed by an agent without bespoke wiring.
+  </p>
+  <p>Two consequences follow:</p>
+  <ol>
+    <li><strong>Agents look smart in demos and unreliable in practice.</strong> They fail not because the model is weak but because the context they pull is missing, stale, or wrong.</li>
+    <li><strong>The cost of "knowing what we know" is paid over and over.</strong> A new hire, a manager preparing a board update, and an agent answering a customer all repeat the same archaeology because nothing surfaces the canonical answer.</li>
+  </ol>
+  <div class="callout accent">
+    <div class="callout-label">The bet</div>
+    <p>If we make the <em>gaps</em> in our context legible, ranked by business impact, and executable as repeatable tests, every team's data and documentation hygiene improves fast — because shipping an agent, a feature, or a dashboard requires passing the relevant evals the way shipping code requires passing tests. Reagent becomes <strong>CI for context</strong>.</p>
+  </div>
+</section>
+
+<section id="vocab">
+  <div class="section-num">03 — Vocabulary</div>
+  <h2>Plain names for plain things, with one piece of poetry.</h2>
+  <p>
+    We use one evocative name — <em>Reagent</em> — because the agent / re-agent pun is the whole conceptual frame. Everything else is called what it is.
+  </p>
+  <div class="vocab">
+    <div class="vocab-row">
+      <div class="vocab-term">Reagent</div>
+      <div class="vocab-def">The project, and the unit of context. A reagent is anything an agent or person needs to produce a correct answer: a warehouse table, a Notion page, a Slack thread, a decision record, a person's tribal knowledge, an API.</div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Eval</div>
+      <div class="vocab-def">One executable test. A question, the canonical answer, the reagents it should use, and the assertions that prove correctness. <span class="old">was: incantation</span></div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Library</div>
+      <div class="vocab-def">The full set of evals, version-controlled in Git, organized by department. Two tiers: <code>team-local</code> (anyone can add, runs immediately) and <code>canonical</code> (reviewed, contributes to company rollups). <span class="old">was: Grimoire</span></div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Agent</div>
+      <div class="vocab-def">The system under test. Could be a production internal agent, a new agent being shipped, or a thin harness wrapping the same tools and prompts. <span class="old">was: Caster</span></div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Oracle</div>
+      <div class="vocab-def">The canonical procedure for producing the true answer to an eval's question. Usually a SQL query, a Python snippet, a pinned doc excerpt, or a human-attested fact with an expiry date.</div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Assertion</div>
+      <div class="vocab-def">A check applied to the agent's answer or trace. Numeric equality / tolerance, rubric grading, "must have used this reagent", citation present, freshness within bounds.</div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Promotion</div>
+      <div class="vocab-def">Moving an eval from <code>team-local</code> to <code>canonical</code>. Requires PR review by the department owner plus a Reagent platform reviewer. <span class="old">was: inscription</span></div>
+    </div>
+    <div class="vocab-row">
+      <div class="vocab-term">Context gap</div>
+      <div class="vocab-def">A structured ticket auto-filed against the source team when an eval fails due to missing or stale context. The ticket stream is the data bus build-out backlog.</div>
+    </div>
+  </div>
+</section>
+
+<section id="users">
+  <div class="section-num">04 — Primary users</div>
+  <h2>Two audiences, both first-class.</h2>
+  <h3>1. Agent and tool builders</h3>
+  <p>
+    Engineers and PMs building internal agents at Spellbook. They use Reagent like CI: before shipping, the relevant slice of the Library must pass. Failures point them precisely at whether to fix the agent, request a new connector, or escalate a data hygiene issue to the source team.
+  </p>
+  <h3>2. Department owners and operators</h3>
+  <p>
+    Heads of Sales, Finance, People, Legal, Product. They author the evals that matter to their domain. They are the source of truth for what questions are <em>worth answering reliably</em>, and they are the primary consumers of the per-department health dashboard.
+  </p>
+  <div class="callout">
+    <div class="callout-label">Mental model</div>
+    <p>Agent builders are <strong>users</strong> of the Library. Department owners are <strong>authors</strong> of it. The product must delight both.</p>
+  </div>
+</section>
+
+<section id="metrics">
+  <div class="section-num">05 — Success metrics</div>
+  <h2>What "this is working" looks like.</h2>
+  <h3>North star</h3>
+  <div class="stat">
+    <div class="stat-number">⤵</div>
+    <div class="stat-text">
+      <strong>Median time from question → trusted answer</strong>, measured weekly across a fixed basket of representative business questions. Baseline is captured in week 1 of the pilot.
+    </div>
+  </div>
+  <h3>Leading indicators</h3>
+  <ul>
+    <li><strong>Library pass rate</strong> by department and overall, trended weekly.</li>
+    <li><strong>Context-gap closure velocity</strong>. For each failing eval that opens a context-gap ticket, time-to-close.</li>
+    <li><strong>Coverage.</strong> Number of canonical evals per department, weighted by question importance (P0/P1/P2 set by the department owner).</li>
+    <li><strong>Adoption.</strong> Number of distinct authors contributing evals per month; number of internal agents gated on Library passes.</li>
+  </ul>
+  <h3>Counter-metrics</h3>
+  <p>Watched so we don't game ourselves:</p>
+  <ul>
+    <li>Pass rate climbing while real questions still take days to answer (signals the Library is testing the wrong things).</li>
+    <li>Author counts climbing while eval quality drops (signals the review bar is too loose).</li>
+  </ul>
+</section>
+
+<section id="concepts">
+  <div class="section-num">06 — Core concepts</div>
+  <h2>The data model in one page.</h2>
+  <h3>The eval</h3>
+  <p>An eval is a structured, versioned object with:</p>
+  <ul>
+    <li><strong>Identity:</strong> id, title, department, owner, version, tier.</li>
+    <li><strong>Question:</strong> the natural-language question, phrased the way an employee would actually ask.</li>
+    <li><strong>Parameters:</strong> optional named variables (<code>{quarter}</code>, <code>{region}</code>) that let one eval cover a family of real questions.</li>
+    <li><strong>Reagents:</strong> the declared context inputs the question should use. Each has a type (<code>table</code>, <code>doc</code>, <code>slack_thread</code>, <code>tribal</code>, <code>api</code>), a locator, and a freshness expectation.</li>
+    <li><strong>Oracle:</strong> the canonical way of producing the true answer. Becomes the ground-truth at run time.</li>
+    <li><strong>Assertions:</strong> the checks applied to the agent's output and trace.</li>
+    <li><strong>Cadence:</strong> when this eval runs (on-demand, nightly, on data change, on agent release).</li>
+  </ul>
+
+  <h3>Failure taxonomy</h3>
+  <p>Every failed eval is classified into exactly one of three buckets. This classification is the engine that turns Reagent into a real-world remediation backlog.</p>
+  <div class="tax-grid">
+    <div class="tax-card missing">
+      <span class="tag">Missing</span>
+      <h5>Missing reagent</h5>
+      <p>The agent couldn't find or access required context. Connector down, doc not indexed, table not visible to the role.</p>
+    </div>
+    <div class="tax-card stale">
+      <span class="tag">Stale</span>
+      <h5>Stale or incorrect reagent</h5>
+      <p>The agent found context, but it disagrees with the oracle. Stale doc, schema drift, two systems-of-record disagree, ambiguous naming.</p>
+    </div>
+    <div class="tax-card reason">
+      <span class="tag">Reasoning</span>
+      <h5>Reasoning error</h5>
+      <p>Reagents were present, fresh, and unambiguous; the agent's reasoning or output was simply wrong. A model problem, not a context problem.</p>
+    </div>
+  </div>
+  <p>
+    Missing and stale failures auto-open a <strong>context-gap ticket</strong> in the source team's tracker, with the eval id, the specific reagent that failed, and a suggested remediation. Reasoning failures are routed to the agent owner.
+  </p>
+
+  <h3>The Library</h3>
+  <p>
+    Git-backed monorepo of YAML eval files, organized by <code>team-local/&lt;department&gt;/</code> and <code>canonical/&lt;department&gt;/</code>. A thin metadata index in Postgres powers the dashboard ("show me every Sales eval failing this week"). The same eval file is the source of truth whether it was authored in the web tool, via natural language, or hand-written by an engineer.
+  </p>
+</section>
+
+<section id="spec">
+  <div class="section-num">07 — What an eval looks like</div>
+  <h2>The canonical format is YAML.</h2>
+  <p>
+    Most evals will not use every field. Sensible defaults keep the average eval under thirty lines of YAML. Here is the full shape, annotated.
+  </p>
+
+<pre><span class="code-label">eval.yaml — full shape</span><span class="k">id</span><span class="p">:</span> <span class="s">sales.cohort_revenue.quarterly</span>
+<span class="k">title</span><span class="p">:</span> <span class="s">"Quarterly revenue by customer cohort"</span>
+<span class="k">department</span><span class="p">:</span> <span class="s">sales</span>
+<span class="k">owner</span><span class="p">:</span> <span class="s">head-of-sales@spellbook.legal</span>
+<span class="k">version</span><span class="p">:</span> <span class="n">3</span>
+<span class="k">tier</span><span class="p">:</span> <span class="s">canonical</span>            <span class="c"># or team-local</span>
+<span class="k">importance</span><span class="p">:</span> <span class="s">P0</span>                <span class="c"># P0 | P1 | P2</span>
+
+<span class="k">question</span><span class="p">:</span> <span class="p">|</span>
+  <span class="s">Find the {metric} by customer cohort for {quarter}.</span>
+
+<span class="k">parameters</span><span class="p">:</span>
+  <span class="k">metric</span><span class="p">:</span>   { <span class="k">default</span><span class="p">:</span> <span class="s">revenue</span>, <span class="k">allowed</span><span class="p">:</span> [<span class="s">revenue</span>, <span class="s">gross_margin</span>] }
+  <span class="k">quarter</span><span class="p">:</span>  { <span class="k">default</span><span class="p">:</span> <span class="s">current</span>, <span class="k">type</span><span class="p">:</span> <span class="s">quarter_ref</span> }
+
+<span class="k">reagents</span><span class="p">:</span>
+  <span class="p">-</span> <span class="k">id</span><span class="p">:</span> <span class="s">warehouse.fct_invoice</span>
+    <span class="k">type</span><span class="p">:</span> <span class="s">table</span>
+    <span class="k">locator</span><span class="p">:</span> <span class="s">warehouse://analytics/fct_invoice</span>
+    <span class="k">freshness</span><span class="p">:</span> <span class="s">live</span>
+    <span class="k">must_use</span><span class="p">:</span> <span class="s">true</span>
+  <span class="p">-</span> <span class="k">id</span><span class="p">:</span> <span class="s">cohort_definition_doc</span>
+    <span class="k">type</span><span class="p">:</span> <span class="s">doc</span>
+    <span class="k">locator</span><span class="p">:</span> <span class="s">notion://sales/cohort-definitions</span>
+    <span class="k">freshness</span><span class="p">:</span> <span class="s">"&lt;=30d"</span>
+    <span class="k">must_use</span><span class="p">:</span> <span class="s">false</span>
+
+<span class="k">oracle</span><span class="p">:</span>
+  <span class="k">kind</span><span class="p">:</span> <span class="s">sql</span>
+  <span class="k">source</span><span class="p">:</span> <span class="s">warehouse</span>
+  <span class="k">query</span><span class="p">:</span> <span class="p">|</span>
+    <span class="s">select c.cohort_quarter, sum(i.amount_usd) as revenue</span>
+    <span class="s">from analytics.fct_invoice i</span>
+    <span class="s">join analytics.dim_customer c on c.id = i.customer_id</span>
+    <span class="s">where i.fiscal_quarter = :quarter</span>
+    <span class="s">group by 1;</span>
+
+<span class="k">assertions</span><span class="p">:</span>
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">numeric_table_match</span>, <span class="k">on</span><span class="p">:</span> <span class="s">revenue</span>, <span class="k">rtol</span><span class="p">:</span> <span class="n">0.005</span> }
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">trace_must_include</span>, <span class="k">reagents</span><span class="p">:</span> [<span class="s">warehouse.fct_invoice</span>] }
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">citation_present</span> }
+
+<span class="k">cadence</span><span class="p">:</span>
+  <span class="k">triggers</span><span class="p">:</span> [<span class="s">on_demand</span>, <span class="s">nightly</span>, <span class="s">on_schema_change</span>, <span class="s">on_agent_release</span>]</pre>
+
+  <h3>Assertion kinds at v1</h3>
+  <ul>
+    <li><code>numeric_equals</code> / <code>numeric_within</code> — absolute or relative tolerance.</li>
+    <li><code>numeric_table_match</code> — compare two tables row-by-row with tolerance.</li>
+    <li><code>string_contains</code> / <code>string_matches_regex</code> — for exact-phrase or pattern checks.</li>
+    <li><code>rubric</code> — LLM-graded against a stated rubric. Judge model and rubric text are both versioned.</li>
+    <li><code>trace_must_include</code> / <code>trace_must_not_include</code> — which reagents were actually consulted.</li>
+    <li><code>citation_present</code> — agent must cite at least one reagent with a resolvable locator.</li>
+    <li><code>freshness_within</code> — source freshness check, independent of the answer.</li>
+  </ul>
+
+  <h3>Oracle kinds at v1</h3>
+  <ul>
+    <li><code>sql</code> — parameterized warehouse query.</li>
+    <li><code>python</code> — short snippet with allow-listed imports, deterministic.</li>
+    <li><code>pinned_doc</code> — a frozen excerpt of a Notion/Drive doc, used when ground truth is qualitative.</li>
+    <li><code>human_attested</code> — a human-confirmed answer with an expiration date. The runtime warns the owner as expiry nears.</li>
+  </ul>
+</section>
+
+<section id="examples">
+  <div class="section-num">08 — Example evals, simplest first</div>
+  <h2>From a one-line check to a real Sales rollup.</h2>
+  <p>
+    The implementing team should ship the format such that the average eval is short. These four examples ladder from "the simplest thing that can possibly be useful" up to the worked Sales example.
+  </p>
+
+  <h3>Example 1 — A single number from one table</h3>
+  <p>The simplest possible eval. One reagent, one numeric assertion, one oracle SQL query.</p>
+<pre><span class="code-label">headcount.current — simplest</span><span class="k">id</span><span class="p">:</span> <span class="s">people.headcount.current</span>
+<span class="k">title</span><span class="p">:</span> <span class="s">"What is the current headcount?"</span>
+<span class="k">department</span><span class="p">:</span> <span class="s">people</span>
+<span class="k">owner</span><span class="p">:</span> <span class="s">head-of-people@spellbook.legal</span>
+<span class="k">importance</span><span class="p">:</span> <span class="s">P1</span>
+
+<span class="k">question</span><span class="p">:</span> <span class="s">"How many employees does Spellbook have today?"</span>
+
+<span class="k">reagents</span><span class="p">:</span>
+  <span class="p">-</span> { <span class="k">id</span><span class="p">:</span> <span class="s">hris.employees</span>, <span class="k">type</span><span class="p">:</span> <span class="s">table</span>, <span class="k">locator</span><span class="p">:</span> <span class="s">warehouse://hris.dim_employee</span>, <span class="k">freshness</span><span class="p">:</span> <span class="s">live</span> }
+
+<span class="k">oracle</span><span class="p">:</span>
+  <span class="k">kind</span><span class="p">:</span> <span class="s">sql</span>
+  <span class="k">query</span><span class="p">:</span> <span class="s">"select count(*) from hris.dim_employee where employment_status = 'active'"</span>
+
+<span class="k">assertions</span><span class="p">:</span>
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">numeric_equals</span> }
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">trace_must_include</span>, <span class="k">reagents</span><span class="p">:</span> [<span class="s">hris.employees</span>] }</pre>
+
+  <h3>Example 2 — A single fact from one document</h3>
+  <p>A policy lookup. Pinned doc as oracle, rubric assertion, must-cite.</p>
+<pre><span class="code-label">parental_leave.us — doc lookup</span><span class="k">id</span><span class="p">:</span> <span class="s">people.parental_leave.us</span>
+<span class="k">title</span><span class="p">:</span> <span class="s">"US parental leave policy"</span>
+<span class="k">department</span><span class="p">:</span> <span class="s">people</span>
+<span class="k">owner</span><span class="p">:</span> <span class="s">head-of-people@spellbook.legal</span>
+<span class="k">importance</span><span class="p">:</span> <span class="s">P0</span>
+
+<span class="k">question</span><span class="p">:</span> <span class="s">"What is the US parental leave policy: weeks of leave and pay continuation?"</span>
+
+<span class="k">reagents</span><span class="p">:</span>
+  <span class="p">-</span> { <span class="k">id</span><span class="p">:</span> <span class="s">policy_doc</span>, <span class="k">type</span><span class="p">:</span> <span class="s">doc</span>, <span class="k">locator</span><span class="p">:</span> <span class="s">notion://people/policies/parental-leave-us</span>, <span class="k">freshness</span><span class="p">:</span> <span class="s">"&lt;=180d"</span> }
+
+<span class="k">oracle</span><span class="p">:</span>
+  <span class="k">kind</span><span class="p">:</span> <span class="s">pinned_doc</span>
+  <span class="k">source</span><span class="p">:</span> <span class="s">notion://people/policies/parental-leave-us</span>
+  <span class="k">pinned_at</span><span class="p">:</span> <span class="s">2026-04-01</span>
+  <span class="k">expires_at</span><span class="p">:</span> <span class="s">2026-10-01</span>
+
+<span class="k">assertions</span><span class="p">:</span>
+  <span class="p">-</span> <span class="k">kind</span><span class="p">:</span> <span class="s">rubric</span>
+    <span class="k">rubric</span><span class="p">:</span> <span class="s">"Answer must state weeks of leave for both birthing and non-birthing parents, and pay continuation %."</span>
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">citation_present</span> }</pre>
+
+  <h3>Example 3 — A boolean check on a process</h3>
+  <p>Useful for compliance and ops questions. Combines a structured assertion with a freshness check.</p>
+<pre><span class="code-label">backup.policy_compliance — boolean</span><span class="k">id</span><span class="p">:</span> <span class="s">engineering.backups.production_compliant</span>
+<span class="k">title</span><span class="p">:</span> <span class="s">"Are production backups within policy?"</span>
+<span class="k">department</span><span class="p">:</span> <span class="s">engineering</span>
+<span class="k">importance</span><span class="p">:</span> <span class="s">P0</span>
+
+<span class="k">question</span><span class="p">:</span> <span class="s">"Is our production database backed up within the last 24 hours per the retention policy?"</span>
+
+<span class="k">reagents</span><span class="p">:</span>
+  <span class="p">-</span> { <span class="k">id</span><span class="p">:</span> <span class="s">backup_log</span>, <span class="k">type</span><span class="p">:</span> <span class="s">table</span>, <span class="k">locator</span><span class="p">:</span> <span class="s">warehouse://ops.backup_runs</span>, <span class="k">freshness</span><span class="p">:</span> <span class="s">live</span> }
+
+<span class="k">oracle</span><span class="p">:</span>
+  <span class="k">kind</span><span class="p">:</span> <span class="s">sql</span>
+  <span class="k">query</span><span class="p">:</span> <span class="s">"select max(completed_at) &gt; now() - interval '24 hours' as ok from ops.backup_runs where target = 'prod_primary'"</span>
+
+<span class="k">assertions</span><span class="p">:</span>
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">numeric_equals</span> }
+  <span class="p">-</span> { <span class="k">kind</span><span class="p">:</span> <span class="s">freshness_within</span>, <span class="k">reagent</span><span class="p">:</span> <span class="s">backup_log</span>, <span class="k">threshold</span><span class="p">:</span> <span class="s">"24h"</span> }</pre>
+
+  <h3>Example 4 — The user's seed question</h3>
+  <p>
+    "Find the sales by customer cohort for this quarter." This is the worked example shown in §07 above. It combines structured numeric assertions, trace assertions, and a multi-reagent dependency. It's the shape that most Sales and Finance evals will take.
+  </p>
+
+  <div class="callout accent">
+    <div class="callout-label">A pattern worth noticing</div>
+    <p>The simplest evals are <strong>one reagent + one oracle + one assertion</strong>. They are cheap to author, cheap to run, and they collectively make the Library wide rather than deep at the start. Depth comes later, as failures expose what the dashboard needs to distinguish.</p>
+  </div>
+</section>
+
+<section id="exec">
+  <div class="section-num">09 — Execution model</div>
+  <h2>Two lanes, both required.</h2>
+  <div class="arch">
+    <div class="arch-row">
+      <div class="arch-node">Eval</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Runner</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node accent">Fast lane</div>
+      <div class="arch-arrow">+</div>
+      <div class="arch-node accent">Full lane</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Grader</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">Dashboard</div>
+    </div>
+    <div class="arch-caption">// fast lane = reagent reachability + oracle health · full lane = end-to-end against a real agent</div>
+  </div>
+
+  <h3>Fast lane (always on)</h3>
+  <p>
+    For each eval, the runner exercises only the reagent-reachability and oracle-execution portion: <em>can the agent access the declared reagents? does the oracle still produce a well-shaped answer? have any freshness expectations been violated?</em> Runs in seconds, no model call to the agent. Catches the bulk of context-bus regressions — connector outages, renamed tables, stale docs — which is most of what we care about.
+  </p>
+
+  <h3>Full lane (scheduled subset and on-demand)</h3>
+  <p>
+    For all P0 evals plus a sampled tail, the runner sends the parameterized question to a real agent with full tool access, captures the response and the trace, and runs the full assertion suite including rubric grading. This is where reasoning-error failures surface and where the agent's real performance is measured.
+  </p>
+
+  <p>
+    A single eval's pass/fail is composite: fast-lane health plus the most recent full-lane result. The dashboard exposes both, so a P0 with a recent fast-lane regression is visible immediately without waiting for the next full-lane window.
+  </p>
+</section>
+
+<section id="authoring">
+  <div class="section-num">10 — The authoring tool</div>
+  <h2>A web tool that meets people where they are.</h2>
+  <p>
+    YAML and Git make the Library durable, auditable, and toolable. They also exclude the vast majority of the people whose evals we want — Sales leaders, Finance ops, People partners. The authoring tool's whole purpose is to remove that exclusion without losing the canonical YAML as source of truth.
+  </p>
+  <p>
+    The tool offers three authoring modes, all of which compile to identical YAML and submit a pull request under the hood.
+  </p>
+
+  <h3>Mode 1 — Ask in plain English (the default)</h3>
+  <p>
+    A single text box and a "compose this eval" button. The author types something like: <em>"I want to verify that anyone asking about US parental leave policy gets the right number of weeks and the right pay continuation, citing the Notion policy doc."</em>
+  </p>
+  <p>
+    An LLM that has been prompted with the full Reagent format and the company's available reagents (warehouse schema, indexed docs, connected systems) drafts a complete eval — question, parameters, candidate reagents, oracle scaffold, assertions. The author sees the drafted YAML <em>and</em> a human-readable summary side-by-side, edits either, and submits. Behind the scenes the LLM is given:
+  </p>
+  <ul>
+    <li>The eval spec and a curated set of high-quality example evals.</li>
+    <li>The author's department and recently viewed reagents, to ground suggestions.</li>
+    <li>A retrievable index of every reagent locator the company has ever declared, so it can suggest specific tables, docs, and channels rather than placeholders.</li>
+    <li>An evaluator pass that lints the draft before showing it to the author (catches missing oracle, ambiguous question, undeclared reagent, etc.).</li>
+  </ul>
+  <p>
+    This mode is the path of least resistance and is intended to produce the bulk of contributed evals.
+  </p>
+
+  <div class="mockup" aria-label="Mockup: plain English composer">
+    <div class="mockup-chrome">
+      <div class="mockup-dots"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
+      <div class="mockup-url">reagent.spellbook.legal / compose</div>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-eyebrow">Compose · Mode 1 · Plain English</div>
+      <p class="mockup-h">Describe the eval you want.</p>
+      <div class="mockup-textarea">
+        Verify that anyone asking about quarterly revenue by customer cohort gets the right numbers within 0.5% tolerance, citing the <code>fct_invoice</code> table. Should work for any past quarter.
+      </div>
+      <div class="mockup-btn-row">
+        <button class="mockup-btn accent">✨ Compose eval</button>
+        <button class="mockup-btn ghost">Use a template instead</button>
+      </div>
+
+      <div class="mockup-draft">
+        <div class="mockup-draft-head">
+          <span>Drafted eval · ready to review</span>
+          <span>linter: clean</span>
+        </div>
+        <div class="mockup-draft-body">
+          <div class="mockup-field"><div class="lbl">id</div><div class="val"><code>sales.cohort_revenue.quarterly</code></div></div>
+          <div class="mockup-field"><div class="lbl">question</div><div class="val">Find the revenue by customer cohort for {quarter}.</div></div>
+          <div class="mockup-field"><div class="lbl">parameters</div><div class="val"><span class="mockup-chip">quarter · quarter_ref</span></div></div>
+          <div class="mockup-field"><div class="lbl">reagents</div><div class="val">
+            <span class="mockup-chip accent">warehouse · fct_invoice</span>
+            <span class="mockup-chip accent">warehouse · dim_customer</span>
+            <span class="mockup-chip">notion · cohort-definitions</span>
+          </div></div>
+          <div class="mockup-field"><div class="lbl">oracle</div><div class="val"><code>sql · warehouse</code> — auto-drafted, review query</div></div>
+          <div class="mockup-field"><div class="lbl">assertions</div><div class="val">
+            <span class="mockup-chip">numeric_table_match · rtol 0.005</span>
+            <span class="mockup-chip">trace_must_include</span>
+            <span class="mockup-chip">citation_present</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="mockup-btn-row">
+        <button class="mockup-btn accent">Open PR</button>
+        <button class="mockup-btn ghost">Edit as YAML</button>
+        <button class="mockup-btn ghost">Re-draft</button>
+      </div>
+    </div>
+  </div>
+
+  <h3>Mode 2 — Visual builder (for the structured-minded)</h3>
+  <p>
+    A step-by-step form: <em>name your eval → write the question → add reagents (autocomplete against connected systems) → choose an oracle (SQL helper, doc picker, Python sandbox, or human-attested) → pick assertions from a typed menu → set cadence and importance</em>.
+  </p>
+  <p>
+    Every field has inline help that explains what it does and shows a one-line example. The reagent picker is connector-aware — pick "Warehouse table" and you get a typeahead over your warehouse schema; pick "Notion doc" and you get the document tree. The form previews the compiled YAML in real time. This mode is best for repeatable patterns (most quarterly metrics, most policy lookups) and for users who want to feel in control of each field.
+  </p>
+
+  <div class="mockup" aria-label="Mockup: visual builder">
+    <div class="mockup-chrome">
+      <div class="mockup-dots"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
+      <div class="mockup-url">reagent.spellbook.legal / builder / sales.cohort_revenue.quarterly</div>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-eyebrow">Compose · Mode 2 · Visual builder</div>
+      <div class="builder-steps">
+        <div class="builder-step done">1 · Identity</div>
+        <div class="builder-step done">2 · Question</div>
+        <div class="builder-step active">3 · Reagents</div>
+        <div class="builder-step">4 · Oracle</div>
+        <div class="builder-step">5 · Assertions</div>
+        <div class="builder-step">6 · Cadence</div>
+      </div>
+
+      <div class="builder-grid">
+        <div class="builder-form">
+          <div class="field">
+            <label>Reagent type</label>
+            <div class="input">Warehouse table ▾</div>
+          </div>
+          <div class="field">
+            <label>Locator (start typing — autocomplete against your warehouse)</label>
+            <div class="input with-ac">warehouse://analytics/fct_inv</div>
+            <div class="ac-list">
+              <div class="ac-item hl"><span>warehouse://analytics/fct_invoice</span><span class="ac-meta">8 cols · live</span></div>
+              <div class="ac-item"><span>warehouse://analytics/fct_invoice_line</span><span class="ac-meta">12 cols · live</span></div>
+              <div class="ac-item"><span>warehouse://staging/fct_invoice_raw</span><span class="ac-meta">deprecated</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Freshness expectation</label>
+            <div class="input">live ▾</div>
+          </div>
+          <div class="field">
+            <label>Required for this eval?</label>
+            <div class="input">Yes — agent must consult this reagent ▾</div>
+          </div>
+          <div class="mockup-btn-row">
+            <button class="mockup-btn ghost">+ Add another reagent</button>
+            <button class="mockup-btn accent">Next: Oracle →</button>
+          </div>
+        </div>
+        <div class="builder-preview">
+          <div class="builder-preview-label">Live YAML preview</div>
+<span style="color:#FFD400">reagents:</span>
+  - <span style="color:#FFD400">id:</span> <span style="color:#B8E0A4">warehouse.fct_invoice</span>
+    <span style="color:#FFD400">type:</span> <span style="color:#B8E0A4">table</span>
+    <span style="color:#FFD400">locator:</span> <span style="color:#B8E0A4">warehouse://</span>
+      <span style="color:#B8E0A4">analytics/fct_invoice</span>
+    <span style="color:#FFD400">freshness:</span> <span style="color:#B8E0A4">live</span>
+    <span style="color:#FFD400">must_use:</span> <span style="color:#F5A572">true</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Mode 3 — YAML / SDK (for engineers)</h3>
+  <p>
+    Engineers can author directly in YAML or via a Python/TS SDK that wraps the same schema and gives them fixtures, parameterization helpers, and unit-test style assertions. The web tool's outputs are byte-for-byte compatible with hand-authored YAML. Engineers can also import an existing eval into the web tool, edit it visually, and round-trip without churn.
+  </p>
+
+  <h3>Record-and-replay: a fourth on-ramp</h3>
+  <p>
+    Independent of the three modes above, every internal agent that integrates Reagent's tracing emits a <em>candidate eval</em> for any conversation that ended with a user thumbs-down + correction. The candidate is pre-populated with the user's original question, the agent's trace, and the user's correction as a scaffolded oracle. The author opens the candidate in the web tool — usually in Mode 2 — finishes it in a few clicks, and submits. This loop turns daily friction into Library growth without anyone deliberately sitting down to "write evals".
+  </p>
+
+  <h3>The Git relationship</h3>
+  <p>
+    The tool is a thin layer on top of Git. Every submitted eval, regardless of authoring mode, opens a pull request against the Library monorepo. Team-local evals auto-merge after CI passes (YAML parses, oracle executes, no PII detected by the linter). Canonical evals require human review per §11. Authors see PR status in the web tool; the tool is the primary surface for non-engineers but it never hides the underlying mechanism from anyone who wants to look.
+  </p>
+
+  <div class="callout">
+    <div class="callout-label">Why this matters more than the runtime</div>
+    <p>The hardest problem in Reagent is not the executor — it's sustaining contribution from departments that have never written an eval in their lives. If the authoring tool is mediocre, Reagent dies as a platform-team side project. If it's excellent, every department head will want their Library to grow.</p>
+  </div>
+</section>
+
+<section id="life">
+  <div class="section-num">11 — Life with Reagent</div>
+  <h2>A morning in <code>#reagent-sales</code> once the Library is humming.</h2>
+  <p>
+    The point of all this is not the runtime, the YAML, or the dashboard. It is what an ordinary Tuesday morning feels like when Reagent has real coverage. Below is one channel from the not-too-distant future. Note three patterns that compound: <strong>(a)</strong> the bot proactively summarizes context health, <strong>(b)</strong> every agent-produced number arrives with a verification badge linking to the eval that proved it, and <strong>(c)</strong> failures become tickets to the right team without anyone filing them by hand.
+  </p>
+
+  <div class="slack">
+    <div class="slack-chrome">
+      <div class="slack-chrome-w">Spellbook</div>
+      <div style="opacity:0.7">⌘K  Search</div>
+    </div>
+    <div class="slack-channel-bar">
+      <div class="slack-channel-name">reagent-sales</div>
+      <div class="slack-channel-topic">Verified context for the Sales org · 49 evals · 96% passing · 2 open CTX</div>
+    </div>
+    <div class="slack-feed">
+
+      <div class="slack-day-divider">Tuesday, May 19</div>
+
+      <!-- Morning health post -->
+      <div class="slack-msg">
+        <div class="slack-avatar av-bot">R</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name bot">Reagent</span>
+            <span class="slack-msg-time">9:00 AM</span>
+          </div>
+          <div class="slack-msg-text">
+            🌅 Sales Library health for Tuesday morning.
+          </div>
+          <div class="slack-alert">
+            <div class="alert-head">47 / 49 evals passing · 96%</div>
+            <div class="alert-body">
+              Two evals failing, both classified <strong>stale reagent</strong> on <code>dim_customer.cohort_quarter</code>. CTX-241 is open with @data-platform (3d old). CTX-239 was closed yesterday — the segment_tier backfill landed. Trend: +1.4pp pass rate over the last 7 days.
+            </div>
+          </div>
+          <div class="slack-reactions">
+            <span class="slack-rxn">✅ 4</span>
+            <span class="slack-rxn">🙏 2</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="slack-divider">
+
+      <!-- Maria asks a question -->
+      <div class="slack-msg">
+        <div class="slack-avatar av-maria">MC</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name">Maria Chen</span>
+            <span class="slack-msg-time">9:14 AM</span>
+          </div>
+          <div class="slack-msg-text">
+            QBR at 10 — quick, what was Q1 NRR by cohort? I need it before I rebuild slide 14.
+          </div>
+        </div>
+      </div>
+
+      <!-- Reagent's verified answer card -->
+      <div class="slack-msg">
+        <div class="slack-avatar av-bot">R</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name bot">Reagent</span>
+            <span class="slack-msg-time">9:14 AM</span>
+          </div>
+          <div class="slack-msg-text">Here's the verified answer, Maria.</div>
+          <div class="slack-card">
+            <div class="slack-card-head">
+              <span class="reagent-verified">verified</span>
+              <span class="slack-card-meta">eval: <code style="background:#F4EDE4;border:1px solid #E6DDD0;color:#A02E2E;font-size:11.5px;padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;">sales.cohort_revenue.quarterly</code> · P0 · full lane 7 min ago</span>
+            </div>
+            <div class="slack-card-rows">
+              cohort 2023 &nbsp;·&nbsp; <span class="num">$5.1M</span> &nbsp;·&nbsp; NRR <span class="num">1.09</span><br>
+              cohort 2024 &nbsp;·&nbsp; <span class="num">$4.2M</span> &nbsp;·&nbsp; NRR <span class="num">1.18</span><br>
+              cohort 2025 &nbsp;·&nbsp; <span class="num">$2.8M</span> &nbsp;·&nbsp; NRR <span class="num">1.31</span>
+            </div>
+            <div class="slack-card-foot">
+              <span>reagents: <code style="background:#F4EDE4;border:1px solid #E6DDD0;color:#A02E2E;font-size:11.5px;padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;">fct_invoice</code> <code style="background:#F4EDE4;border:1px solid #E6DDD0;color:#A02E2E;font-size:11.5px;padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;">dim_customer</code></span>
+              <a href="#">View eval</a>
+              <a href="#">Trace</a>
+              <a href="#">Re-run now</a>
+            </div>
+          </div>
+          <div class="slack-reactions">
+            <span class="slack-rxn">🙌 3</span>
+            <span class="slack-rxn">⚡ 1</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="slack-divider">
+
+      <!-- Auto-filed context gap -->
+      <div class="slack-msg">
+        <div class="slack-avatar av-bot">R</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name bot">Reagent</span>
+            <span class="slack-msg-time">9:43 AM</span>
+          </div>
+          <div class="slack-alert danger">
+            <div class="alert-head">⚠ Eval failed · stale reagent</div>
+            <div class="alert-body">
+              <code>sales.expansion_arr.by_segment</code> failed at 9:42 AM. The reagent <code>dim_customer.segment_tier</code> was last updated 14 days ago (policy: ≤7d). Auto-filed <a href="#" style="color:#1264A3;">CTX-242</a> to <strong>@data-platform</strong>. Tagged <strong>@maria-chen</strong> as eval owner.
+            </div>
+          </div>
+          <div class="slack-thread">2 replies — Last reply 18 minutes ago</div>
+        </div>
+      </div>
+
+      <hr class="slack-divider">
+
+      <!-- Mike submits a new eval in plain English -->
+      <div class="slack-msg">
+        <div class="slack-avatar av-mike">MP</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name">Mike Patel</span>
+            <span class="slack-msg-time">10:32 AM</span>
+          </div>
+          <div class="slack-msg-text">
+            Just composed a new eval in plain English to catch what bit us last quarter — expansion ARR by segment with a 1% tolerance, last 4 quarters. Reagent drafted the oracle correctly on the first try 🤯
+          </div>
+          <div class="slack-card">
+            <div class="slack-card-head">
+              <span class="slack-card-meta">PR <a href="#" style="color:#1264A3;">#1043</a> · sales / team-local → canonical · awaiting review</span>
+            </div>
+            <div class="slack-card-rows" style="font-size:12px;">
+              <span style="color:#FFD400;">+</span> <span style="color:#2E7D54;">canonical/sales/expansion_arr_by_segment.yaml</span> <span style="color:#696969;">(34 lines)</span>
+            </div>
+            <div class="slack-card-foot">
+              <a href="#">View PR</a>
+              <a href="#">Preview YAML</a>
+              <a href="#">Approve</a>
+            </div>
+          </div>
+          <div class="slack-reactions">
+            <span class="slack-rxn">👀 2</span>
+            <span class="slack-rxn">🪄 4</span>
+          </div>
+          <div class="slack-thread">1 reply — Maria Chen, 5m ago: "Reviewed, promoting. Nice catch."</div>
+        </div>
+      </div>
+
+      <hr class="slack-divider">
+
+      <!-- Priya from finance asks about an answer cross-checked -->
+      <div class="slack-msg">
+        <div class="slack-avatar av-priya">PR</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name">Priya Rao</span>
+            <span class="slack-msg-time">11:08 AM</span>
+          </div>
+          <div class="slack-msg-text">
+            @reagent does Sales' Q1 NRR rollup reconcile with the Finance ARR view? Asking because slide 14 has both and I don't want them to disagree on stage.
+          </div>
+        </div>
+      </div>
+
+      <div class="slack-msg">
+        <div class="slack-avatar av-bot">R</div>
+        <div class="slack-msg-body">
+          <div class="slack-msg-head">
+            <span class="slack-msg-name bot">Reagent</span>
+            <span class="slack-msg-time">11:08 AM</span>
+          </div>
+          <div class="slack-msg-text">
+            Yes — <code>sales.cohort_revenue.quarterly</code> and <code>finance.arr.by_cohort</code> share the <code>fct_invoice</code> reagent and reconcile within 0.2% (well inside the 1% tolerance). Both passed full-lane in the last 30 minutes. <a href="#">Reconciliation trace ↗</a>
+          </div>
+          <div class="slack-reactions">
+            <span class="slack-rxn">✅ 5</span>
+            <span class="slack-rxn">🛡️ 2</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Why this is the goal, not the dashboard</div>
+    <p>A dashboard is something you have to remember to open. <code>#reagent-sales</code> is something that meets people in the channel where work already happens. The dashboard exists, but the lived experience of Reagent is in Slack — verified answers on demand, proactive health summaries, and failures that route themselves to the right team without anyone playing detective.</p>
+  </div>
+
+  <h3>Surface checklist for the implementing agent</h3>
+  <ul>
+    <li><strong>Per-department channel</strong> (<code>#reagent-sales</code>, <code>#reagent-finance</code>, …) with daily health post and failure alerts.</li>
+    <li><strong>One company-wide channel</strong> (<code>#reagent</code>) for canonical-eval promotions, weekly cross-department rollups, and platform announcements.</li>
+    <li><strong>@reagent mention</strong> works in any channel: "@reagent verify X" returns a verified answer card with the eval id, importance, last-run time, and reagents consulted.</li>
+    <li><strong>Verified answer card format</strong> standardized so non-Reagent agents (Sales Copilot, Finance Copilot, etc.) can also emit the same card shape when their answer was produced under a passing eval. Consistency builds trust faster than any single feature.</li>
+  </ul>
+</section>
+
+<section id="governance">
+  <div class="section-num">12 — Governance &amp; promotion</div>
+  <h2>Two tiers, two bars.</h2>
+  <h3>Team-local evals</h3>
+  <p>
+    Live in <code>team-local/&lt;department&gt;/</code>. Anyone in the department, or any agent builder targeting it, can add one. Auto-merges after CI passes. Runs immediately. Contributes to the department's pass rate but not to the company-wide rollup. Bar: it must parse, the oracle must execute, the author must be a known identity, the LLM linter must not flag it for duplication or quality issues.
+  </p>
+  <h3>Canonical evals</h3>
+  <p>
+    Live in <code>canonical/&lt;department&gt;/</code>. Promoted via pull request, reviewed by the department owner and a Reagent platform reviewer. The review checklist:
+  </p>
+  <ul>
+    <li>Question is real (someone has actually asked this) and clearly worded.</li>
+    <li>Oracle is reproducible and not over-fit to one moment in time.</li>
+    <li>Reagents are correctly declared and resolvable.</li>
+    <li>Assertions are tight enough to catch real regressions, loose enough not to flake.</li>
+    <li>Importance (P0/P1/P2) is set appropriately.</li>
+  </ul>
+  <p>
+    An LLM linter pre-screens PRs and surfaces issues — duplicate, ambiguous question, missing freshness expectation, suspected PII — before human review.
+  </p>
+</section>
+
+<section id="cadence">
+  <div class="section-num">13 — Cadence &amp; triggers</div>
+  <h2>When evals run.</h2>
+  <ul>
+    <li><strong>Canonical P0.</strong> On-demand, nightly full-lane, fast-lane on every data/connector change, blocking on agent release.</li>
+    <li><strong>Canonical P1/P2.</strong> On-demand, weekly full-lane, fast-lane on data/connector change.</li>
+    <li><strong>Team-local.</strong> On-demand, fast-lane on data/connector change, full-lane only on explicit author run.</li>
+  </ul>
+  <p>
+    "Blocking on agent release" means shipping a new internal agent that claims domain coverage requires the relevant slice of the canonical Library to pass. This is the lever that makes Reagent CI for context. It is held until Q2 (see §14).
+  </p>
+</section>
+
+<section id="pilot">
+  <div class="section-num">14 — Pilot scope</div>
+  <h2>Two departments, one quarter, the whole loop.</h2>
+  <p>
+    The pilot is an end-to-end thin slice. The goal is not breadth — it is proving the whole loop works for two real departments, and producing enough value that other departments ask to join.
+  </p>
+  <h3>Pilot departments: Sales and Finance</h3>
+  <p>
+    Chosen because the questions are high-leverage and executive-visible, the data is largely structured and oracle-able, and early failures will surface real, fixable context-bus issues that earn the project credibility.
+  </p>
+  <h3>Pilot deliverables (12 weeks)</h3>
+  <ul>
+    <li>Runner, Grader, Oracle service, Library store, basic Dashboard — all minimally functional.</li>
+    <li>Web authoring tool with Modes 1 and 2 live (Mode 3 / SDK can be CLI-only at MVP).</li>
+    <li>Record-and-replay candidate stream from at least one internal agent.</li>
+    <li>~25 canonical evals per pilot department (50 total), each P0 or P1.</li>
+    <li>Context-gap tracker integration with one ticketing system that Sales and Finance already use.</li>
+    <li>Weekly trended report to the exec team: pass rate, top failures, time-to-trusted-answer.</li>
+  </ul>
+  <h3>Out of pilot</h3>
+  <p>Other departments, the LLM linter, the SDK, advanced assertion kinds, and the agent-release gate. All introduced in Q2.</p>
+</section>
+
+<section id="roadmap">
+  <div class="section-num">15 — Roadmap</div>
+  <h2>Four phases, two quarters to a real footprint.</h2>
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-label">Weeks 0–2<strong>Phase 0</strong></div>
+      <div class="phase-body">
+        <h4>Foundations</h4>
+        <p>Naming and vocabulary rollout. Baseline measurement of time-to-trusted-answer for ~20 representative questions. Pilot department owner identification and kickoff. Tooling environment provisioned.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-label">Weeks 2–8<strong>Phase 1</strong></div>
+      <div class="phase-body">
+        <h4>Thin-slice MVP</h4>
+        <p>Runner + Grader + Oracle + Library store + minimal Dashboard. Authoring via YAML and a working record-and-replay flow. Ten canonical evals live per pilot department. Fast lane on most; full lane on the P0 subset.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-label">Weeks 8–12<strong>Phase 2</strong></div>
+      <div class="phase-body">
+        <h4>Pilot completion</h4>
+        <p>Web authoring tool with Modes 1 and 2 live. Context-gap tracker integration. ~25 canonical evals per pilot department. Weekly exec report cadence established. Retrospective with both pilot departments.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-label">Weeks 12–24<strong>Phase 3</strong></div>
+      <div class="phase-body">
+        <h4>Scale</h4>
+        <p>Add two departments (recommend Product/Engineering and People). Introduce the agent-release gate. LLM linter for PR review. SDK for power users. Team-local authoring opens company-wide; canonical promotion remains gated.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-label">Q3+<strong>Phase 4</strong></div>
+      <div class="phase-body">
+        <h4>Diffusion</h4>
+        <p>Every department has at least a team-local Library. Reagent becomes a routine ingredient of any new agent or internal-tool launch. The context-gap backlog is reviewed by the data bus working group monthly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="scope">
+  <div class="section-num">16 — Out of scope</div>
+  <h2>What Reagent is not.</h2>
+  <ul>
+    <li><strong>Building the agents themselves.</strong> Reagent evaluates agents; it does not build them. Existing internal agents are the initial subjects.</li>
+    <li><strong>Remediating upstream data sources.</strong> Reagent identifies gaps and files tickets; the source team owns the fix.</li>
+    <li><strong>External / customer-facing agents.</strong> Internal use only at v1.</li>
+    <li><strong>Permissions, PII, and compliance redesign.</strong> Reagent inherits existing access controls and respects them in the runner. Must be designed for, not re-architected.</li>
+    <li><strong>Real-time / sub-second evaluation.</strong> Triggers are event-driven but not streaming.</li>
+  </ul>
+</section>
+
+<section id="risks">
+  <div class="section-num">17 — Dependencies &amp; risks</div>
+  <h2>What we depend on, and what could break.</h2>
+  <h3>Dependencies</h3>
+  <ul>
+    <li>Read-only warehouse access for the Oracle service with a stable service account.</li>
+    <li>Read access to Notion, Drive, Slack, and the chosen ticketing system via existing connectors.</li>
+    <li>A versioned, callable interface to each pilot department's internal agent.</li>
+    <li>A Git repo with PR review enabled and CI hooks for the Library store.</li>
+  </ul>
+  <h3>Risks</h3>
+  <ul>
+    <li><strong>Flaky live-oracle queries.</strong> Mitigation: tolerances, retry policies, an explicit flaky-review queue.</li>
+    <li><strong>Authoring bottleneck.</strong> If only the platform team writes evals, Reagent dies as a side project. Mitigation: invest disproportionately in the web authoring tool, especially Mode 1; staff a part-time Reagent fellow in each pilot department for the first six weeks.</li>
+    <li><strong>Vanity pass-rate.</strong> Teams optimize for green by writing trivial evals. Mitigation: importance weighting set by the department owner, and the time-to-trusted-answer counter-metric.</li>
+    <li><strong>Permission drift between agent and oracle.</strong> The oracle may see data the agent cannot. Mitigation: explicit <code>permission_context</code> field per eval and a periodic audit.</li>
+    <li><strong>LLM judge instability.</strong> Rubric-graded assertions drift as the judge updates. Mitigation: pinned judge model; rubric assertions report a rolling stability score and flag when it degrades.</li>
+  </ul>
+</section>
+
+<section id="open">
+  <div class="section-num">18 — Open questions</div>
+  <h2>Decisions deferred to design review.</h2>
+  <ol>
+    <li><strong>Agent invocation interface.</strong> Call existing internal agents over a stable HTTP/SDK boundary, or run a thin Reagent harness wrapping the same tools? Recommended: the harness, for trace fidelity. More upfront work.</li>
+    <li><strong>Trace format.</strong> OpenTelemetry-style spans for reagent consultation, or a Reagent-native schema?</li>
+    <li><strong>Rubric judge model.</strong> Which model is the pinned judge? How is its version surfaced in failure records?</li>
+    <li><strong>Library repo organization.</strong> Monorepo with <code>team-local/</code> and <code>canonical/</code> siblings vs. one repo per department. Recommended: monorepo, with CODEOWNERS rigor.</li>
+    <li><strong>Identity model.</strong> How does an author identity map across the web tool, the YAML <code>owner</code> field, and the source-control commit author?</li>
+    <li><strong>Cost ceiling.</strong> Budget per nightly full-lane run. Sampling policy if cost dominates.</li>
+  </ol>
+</section>
+
+<section id="done">
+  <div class="section-num">19 — Definition of done</div>
+  <h2>v1 is done when…</h2>
+  <ol>
+    <li>A live, scheduled Reagent runtime executes both lanes against real agents for Sales and Finance.</li>
+    <li>The Library has ~50 canonical evals across the two pilot departments, authored across all three modes.</li>
+    <li>The dashboard shows per-department pass rate, top failures, open context-gap tickets, and the trended north-star metric.</li>
+    <li>A documented, repeatable onboarding flow lets us add a third department in under four weeks.</li>
+    <li>A retrospective with both pilot department owners would have them sign their names as customers, not internal beta-testers.</li>
+  </ol>
+  <p>If any of those five are missing, v1 is not yet done.</p>
+</section>
+
+</div>
+</main>
+
+<footer>
+  <div class="brand">Reagent</div>
+  <div>Spellbook · Internal PRD · v1.1 · 2026-05-14</div>
+</footer>
+
+</body>
+</html>

@@ -146,30 +146,33 @@ describe('dayNameToDateKey', () => {
 
     // --- DST transitions ---
 
+    // Anchored to PAST transitions: historical DST rules are frozen in the tz
+    // database and identical across Node/ICU versions. (Future transitions can
+    // shift between ICU releases, which made 2026-based assertions flaky in CI.)
     test('spring forward: PST→PDT midnight boundary shifts to UTC-7', () => {
-        // DST 2026: March 8 at 2 AM PST → 3 AM PDT
+        // DST 2023: March 12 at 2 AM PST → 3 AM PDT
         // After DST, Pacific midnight = UTC 07:00 (not 08:00)
 
-        // March 8, 11 PM PDT = March 9, 06:00 UTC (still March 8 locally)
-        const duringDST = new Date('2026-03-09T06:00:00Z');
-        expect(dayNameToDateKey('Today', duringDST).date).toBe('2026-03-08');
+        // March 12, 11 PM PDT = March 13, 06:00 UTC (still March 12 locally)
+        const duringDST = new Date('2023-03-13T06:00:00Z');
+        expect(dayNameToDateKey('Today', duringDST).date).toBe('2023-03-12');
 
-        // March 9, 12 AM PDT = March 9, 07:00 UTC (now March 9 locally)
-        const afterMidnightPDT = new Date('2026-03-09T07:00:00Z');
-        expect(dayNameToDateKey('Today', afterMidnightPDT).date).toBe('2026-03-09');
+        // March 13, 12 AM PDT = March 13, 07:00 UTC (now March 13 locally)
+        const afterMidnightPDT = new Date('2023-03-13T07:00:00Z');
+        expect(dayNameToDateKey('Today', afterMidnightPDT).date).toBe('2023-03-13');
     });
 
     test('fall back: PDT→PST midnight boundary shifts to UTC-8', () => {
-        // DST 2026: November 1 at 2 AM PDT → 1 AM PST
+        // DST 2023: November 5 at 2 AM PDT → 1 AM PST
         // After DST ends, Pacific midnight = UTC 08:00 (not 07:00)
 
-        // Nov 1, 11 PM PST = Nov 2, 07:00 UTC (still Nov 1 locally)
-        const afterFallBack = new Date('2026-11-02T07:00:00Z');
-        expect(dayNameToDateKey('Today', afterFallBack).date).toBe('2026-11-01');
+        // Nov 5, 11 PM PST = Nov 6, 07:00 UTC (still Nov 5 locally)
+        const afterFallBack = new Date('2023-11-06T07:00:00Z');
+        expect(dayNameToDateKey('Today', afterFallBack).date).toBe('2023-11-05');
 
-        // Nov 2, 12 AM PST = Nov 2, 08:00 UTC
-        const nextDayPST = new Date('2026-11-02T08:00:00Z');
-        expect(dayNameToDateKey('Today', nextDayPST).date).toBe('2026-11-02');
+        // Nov 6, 12 AM PST = Nov 6, 08:00 UTC
+        const nextDayPST = new Date('2023-11-06T08:00:00Z');
+        expect(dayNameToDateKey('Today', nextDayPST).date).toBe('2023-11-06');
     });
 
     // --- Month and year boundary crossings ---

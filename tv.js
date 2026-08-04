@@ -40,8 +40,81 @@ function isSummerSeason(date = new Date()) {
     return month >= 4 && month <= 9;
 }
 
+// Rotating "get outside and rip it" quotes shown above the summer forecast.
+const SUMMER_QUOTES = [
+    "Sitting is for chairlifts. Go rip something.",
+    "The couch will still be here after your run. Probably.",
+    "Loam today, laundry tomorrow.",
+    "Send it now, explain it to your knees later.",
+    "Gravity is free. Use all of it.",
+    "You miss 100% of the sends you don't send.",
+    "Brake less, grin more.",
+    "The trail called. It said stop scrolling.",
+    "Berms before emails. Always.",
+    "Dropper post down, standards up.",
+    "Rip it till the GoPro runs out of storage.",
+    "Fresh loam smells better than any candle.",
+    "Your bike is judging you from the garage.",
+    "Skip leg day. Do a lap instead.",
+    "If in doubt, gas it out.",
+    "Mud is just trail glitter.",
+    "Roost responsibly. Or don't.",
+    "Peak baggers do it higher.",
+    "Elevation gain is the only gain that counts.",
+    "Sunscreen, snacks, send. In that order.",
+    "The alpine does not care about your inbox.",
+    "Ride like the chairlift closes in five minutes.",
+    "Flat pedals, sharp shins, zero regrets.",
+    "Type 2 fun is still fun. Eventually.",
+    "Go touch grass. At 40 km/h.",
+    "The best time to ride was yesterday. Second best is now.",
+    "Bikes don't have a snooze button.",
+    "Ripping it beats therapy. Cheaper, too. Mostly.",
+    "Warning: this trail may cause uncontrollable stoke.",
+    "Climb it so you can bomb it.",
+    "Your excuses don't have suspension.",
+    "Send first, think at the bottom.",
+    "Weekends are for washing bikes and repeating.",
+    "Every trail is a shortcut to happy.",
+    "Do it for the after-ride burrito.",
+    "Rocks are just nature's features.",
+    "Hike-a-bike builds character. So they say.",
+    "The mountain is open. Your calendar is not that important.",
+    "Less doom scrolling, more Doomsday laps.",
+    "Ride now. Adult later."
+];
+
+let quoteTimer = null;
+let lastQuoteIndex = -1;
+
+// Show a random quote (different from the last), fading it in.
+function showRandomQuote() {
+    const el = elements.summerQuote;
+    if (!el) return;
+
+    let idx = Math.floor(Math.random() * SUMMER_QUOTES.length);
+    if (SUMMER_QUOTES.length > 1 && idx === lastQuoteIndex) {
+        idx = (idx + 1) % SUMMER_QUOTES.length;
+    }
+    lastQuoteIndex = idx;
+
+    el.style.opacity = '0';
+    setTimeout(() => {
+        el.textContent = SUMMER_QUOTES[idx];
+        el.style.opacity = '1';
+    }, 500);
+}
+
+// Start rotating quotes (summer mode only).
+function startSummerQuotes() {
+    if (!elements.summerQuote) return;
+    showRandomQuote();
+    quoteTimer = setInterval(showRandomQuote, 12000);
+}
+
 const elements = {
     videoForecastContent: document.getElementById('video-forecast-content'),
+    summerQuote: document.getElementById('summer-quote'),
     tickerContent: document.getElementById('ticker-content'),
     webcams: {
         gnorm: document.getElementById('video-webcam-gnorm'),
@@ -96,7 +169,7 @@ function summerDayLabel(dateStr, index) {
     return d.toLocaleDateString('en-US', { weekday: 'short' });
 }
 
-// Display summer forecast (daily high/low temp + sun/cloud) in the TV overlay
+// Display summer forecast (daily base + alpine temp, sun/cloud) in the TV overlay
 function updateSummerForecast(forecast) {
     if (!elements.videoForecastContent) return;
 
@@ -110,15 +183,15 @@ function updateSummerForecast(forecast) {
     let html = '';
     forecast.forEach((day, i) => {
         const icon = getSummerWeatherIcon(day.condition);
-        const high = day.tempMax != null ? `${day.tempMax}°` : '--';
-        const low = day.tempMin != null ? `${day.tempMin}°` : '';
+        const baseHigh = day.tempMax != null ? `${day.tempMax}°` : '--';
+        const peakHigh = day.summitTempMax != null ? `${day.summitTempMax}°` : '--';
 
         html += `
             <div class="video-forecast-day summer-day">
                 <div class="video-forecast-day-name">${summerDayLabel(day.date, i)}</div>
                 ${icon}
-                <div class="video-forecast-amount">${high}</div>
-                ${low ? `<div class="video-forecast-freezing">${low}</div>` : ''}
+                <div class="summer-temp"><span class="summer-temp-loc">Base</span><span class="video-forecast-amount">${baseHigh}</span></div>
+                <div class="summer-temp"><span class="summer-temp-loc">Peak</span><span class="summer-peak-amount">${peakHigh}</span></div>
             </div>
         `;
     });
@@ -394,6 +467,7 @@ async function init() {
             videoView.dataset.webcamSize = 'summer';
         }
         document.body.dataset.ticker = 'hidden';
+        startSummerQuotes();
     }
 
     if (tvToken) {
@@ -432,4 +506,7 @@ if (document.readyState === 'loading') {
     init();
 }
 
-window.addEventListener('beforeunload', () => clearInterval(refreshTimer));
+window.addEventListener('beforeunload', () => {
+    clearInterval(refreshTimer);
+    clearInterval(quoteTimer);
+});

@@ -3074,7 +3074,7 @@ body {
     display: none;
 }
 
-/* Summer forecast cards (daily temp + sky condition) */
+/* Summer forecast cards (daily base + alpine temp, sky condition) */
 .video-forecast-day.summer-day {
     background: var(--bg-card);
     border-color: var(--accent-warning);
@@ -3085,6 +3085,70 @@ body {
 }
 .video-forecast-day.summer-day .video-forecast-freezing {
     color: var(--text-muted);
+}
+
+/* Base / Peak temperature rows */
+.summer-temp {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+}
+.summer-temp-loc {
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    width: 30px;
+    text-align: right;
+}
+/* Alpine/peak high — cool accent to contrast the warm base high */
+.summer-peak-amount {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+/* Rotating summer quote above the forecast cards */
+.summer-quote {
+    display: none;
+}
+[data-season="summer"] .summer-quote {
+    display: block;
+    text-align: center;
+    margin: 0 0 10px;
+    padding: 7px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 1px solid var(--accent-warning);
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    transition: opacity 0.5s ease;
+}
+
+/* Keep base/peak rows legible at the small + large forecast sizes */
+[data-forecast-size="large"] .summer-peak-amount {
+    font-size: 1.5rem;
+}
+[data-forecast-size="large"] .summer-temp-loc {
+    font-size: 0.6rem;
+    width: 34px;
+}
+[data-forecast-size="small"] .summer-peak-amount {
+    font-size: 0.85rem;
+}
+[data-forecast-size="small"] .summer-temp-loc {
+    font-size: 0.42rem;
+    width: 24px;
 }
 
 /* Small forecast cards */

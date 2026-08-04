@@ -124,8 +124,7 @@ const elements = {
     },
     videoSelector: document.getElementById('video-selector'),
     videoSelectorToggle: document.getElementById('video-selector-toggle'),
-    videoSelectorList: document.getElementById('video-selector-list'),
-    youtubePlayer: document.getElementById('youtube-player')
+    videoSelectorList: document.getElementById('video-selector-list')
 };
 
 // Fetch snow report for ticker and forecast overlay
@@ -272,21 +271,85 @@ function updateTicker(data) {
     elements.tickerContent.innerHTML = html + html;
 }
 
-// Build YouTube embed URL
-function buildPlaylistUrl(startIndex) {
-    const videoIds = playlist.map(v => v.id);
-    const reorderedIds = [...videoIds.slice(startIndex), ...videoIds.slice(0, startIndex)];
-    const firstVideoId = reorderedIds[0];
-    const playlistParam = reorderedIds.join(',');
-    return `https://www.youtube-nocookie.com/embed/${firstVideoId}?autoplay=1&mute=1&loop=1&playlist=${playlistParam}&controls=0`;
+// --- YouTube playback via the IFrame Player API ---
+// The API (vs a plain iframe) lets us force captions off with
+// unloadModule('captions') — there is no URL param that reliably does this.
+
+let player = null;
+let ytApiReady = false;
+let pendingStartIndex = null;
+
+// Playlist IDs reordered so `startIndex` plays first, then wraps.
+function orderedIds(startIndex) {
+    const ids = playlist.map(v => v.id);
+    return [...ids.slice(startIndex), ...ids.slice(0, startIndex)];
+}
+
+// Force subtitles/captions off. The captions module loads after playback
+// starts, so this is called on ready, apiChange, and every state change.
+function hideCaptions() {
+    if (!player) return;
+    try { player.unloadModule('captions'); } catch (e) {}
+    try { player.unloadModule('cc'); } catch (e) {}
+}
+
+function loadYouTubeApi() {
+    if (window.YT && window.YT.Player) { ytApiReady = true; return; }
+    if (document.getElementById('youtube-iframe-api')) return;
+    const tag = document.createElement('script');
+    tag.id = 'youtube-iframe-api';
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+}
+
+// Invoked by the IFrame API once it finishes loading.
+window.onYouTubeIframeAPIReady = function () {
+    ytApiReady = true;
+    if (pendingStartIndex != null) {
+        createPlayer(pendingStartIndex);
+        pendingStartIndex = null;
+    }
+};
+
+function createPlayer(startIndex) {
+    const ids = orderedIds(startIndex);
+    player = new YT.Player('youtube-player', {
+        host: 'https://www.youtube-nocookie.com',
+        width: '100%',
+        height: '100%',
+        videoId: ids[0],
+        playerVars: {
+            autoplay: 1, mute: 1, controls: 0, loop: 1,
+            cc_load_policy: 0, iv_load_policy: 3, rel: 0, playsinline: 1,
+            playlist: ids.slice(1).join(',')
+        },
+        events: {
+            onReady: (e) => { e.target.mute(); e.target.setLoop(true); hideCaptions(); e.target.playVideo(); },
+            onApiChange: hideCaptions,
+            onStateChange: hideCaptions
+        }
+    });
+}
+
+// Start playback at startIndex, deferring until the API is ready.
+function startPlayer(startIndex) {
+    if (ytApiReady && window.YT && window.YT.Player) {
+        createPlayer(startIndex);
+    } else {
+        pendingStartIndex = startIndex;
+        loadYouTubeApi();
+    }
 }
 
 function playVideoByIndex(index) {
     if (index < 0 || index >= playlist.length) return;
 
     currentVideoIndex = index;
-    if (elements.youtubePlayer) {
-        elements.youtubePlayer.src = buildPlaylistUrl(index);
+    if (player && player.loadPlaylist) {
+        player.loadPlaylist({ playlist: orderedIds(index), index: 0 });
+        player.setLoop(true);
+        player.mute();
+        hideCaptions();
     }
     updateVideoSelectorCurrent();
     closeVideoSelector();
@@ -491,8 +554,8 @@ async function init() {
     }
 
     // Start video
-    if (elements.youtubePlayer && playlist.length > 0) {
-        elements.youtubePlayer.src = buildPlaylistUrl(0);
+    if (playlist.length > 0) {
+        startPlayer(0);
     }
 
     setupVideoSelector();

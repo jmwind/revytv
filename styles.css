@@ -3067,6 +3067,13 @@ body {
     height: 255px;
 }
 
+/* Summer hides the top webcam in each column (Gnorm + Ripper snow-stake cams),
+   keeping the lower scenic cams (KPMC + PVWK). */
+[data-season="summer"] .video-webcams-left .video-webcam-wrapper:first-child,
+[data-season="summer"] .video-webcams-right .video-webcam-wrapper:first-child {
+    display: none;
+}
+
 /* Summer forecast cards (daily temp + sky condition) */
 .video-forecast-day.summer-day {
     background: var(--bg-card);

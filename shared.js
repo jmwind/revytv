@@ -60,6 +60,45 @@ function getWeatherIcon(description, amount) {
     </svg>`;
 }
 
+// Summer sky-condition icon, keyed off Open-Meteo condition string
+// (see api/summer-forecast.js codeToCondition). Reuses the sun/cloud marks
+// from getWeatherIcon and adds a rain variant.
+function getSummerWeatherIcon(condition) {
+    const cond = (condition || '').toLowerCase();
+
+    if (cond === 'sunny') {
+        return getWeatherIcon('sunny', 0);
+    }
+
+    if (cond === 'partly cloudy') {
+        // Sun peeking behind a cloud
+        return `<svg class="weather-icon weather-icon-sun" viewBox="0 0 20 20" fill="none">
+            <circle cx="7" cy="7" r="2.6" fill="currentColor"/>
+            <line x1="7" y1="1.5" x2="7" y2="3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="1.5" y1="7" x2="3" y2="7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="3.2" y1="3.2" x2="4.3" y2="4.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="10.8" y1="3.2" x2="9.7" y2="4.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M6 15a2.5 2.5 0 01.4-5 4 4 0 017.7-.5A2.8 2.8 0 0117 15H6z" fill="currentColor"/>
+        </svg>`;
+    }
+
+    if (cond === 'rain' || cond === 'storm') {
+        return `<svg class="weather-icon weather-icon-cloud" viewBox="0 0 20 20" fill="none">
+            <path d="M5 11a2.5 2.5 0 01.4-5 4 4 0 017.7-.5A2.8 2.8 0 0116 11H5z" fill="currentColor"/>
+            <line x1="7" y1="13" x2="6" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="10.5" y1="13" x2="9.5" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="14" y1="13" x2="13" y2="17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>`;
+    }
+
+    if (cond === 'snow') {
+        return getWeatherIcon('', 5);
+    }
+
+    // cloudy / fog / fallback
+    return getWeatherIcon('', 0);
+}
+
 function generateSparkline(history, width = 50, height = 20) {
     if (!history || history.length < 2) return '';
 

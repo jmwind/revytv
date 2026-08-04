@@ -2,6 +2,7 @@
 
 const TV_CONFIG = {
     snowReportApi: '/api/snow-report',
+    summerForecastApi: '/api/summer-forecast',
     userApi: '/api/user',
     webcams: {
         gnorm: 'https://www.revelstokemountainresort.com/uploads/gnorm/gnorm.jpg',
@@ -15,6 +16,13 @@ const TV_CONFIG = {
         { id: 'BsbMhTEoQiM', title: 'Famillia Fernie 2010' },
         { id: 'TPND631Dh-I', title: 'Famillia Spring Break 2010' },
         { id: 'IRwZN2JvtYc', title: 'Famillia Heli NZ 2013' }
+    ],
+    // Summer mode (auto May 1–Oct 31): Revelstoke freeride / big jumps.
+    summerPlaylist: [
+        { id: 'CPd9T_cZj7U', title: 'Best Jumps — Casey Brown' },
+        { id: '8Eh8XRvs1Kc', title: 'All Jump Trails POV' },
+        { id: 'AccoQ7NqSF8', title: 'Doomsday Jump Line' },
+        { id: 'hHgRi2iDS1w', title: 'Ultimate Frisbee POV' }
     ]
 };
 
@@ -23,6 +31,14 @@ let currentVideoIndex = 0;
 let isVideoSelectorOpen = false;
 let refreshTimer = null;
 let snowData = null;
+let isSummer = false;
+
+// Summer runs May 1 through Oct 31 (inclusive); winter otherwise.
+// Uses the display's local clock. Override with ?summer or ?winter.
+function isSummerSeason(date = new Date()) {
+    const month = date.getMonth(); // 0 = Jan ... 4 = May, 9 = Oct
+    return month >= 4 && month <= 9;
+}
 
 const elements = {
     videoForecastContent: document.getElementById('video-forecast-content'),
@@ -55,6 +71,59 @@ async function fetchSnowReport() {
     } catch (error) {
         console.error('Error fetching snow report:', error.message);
     }
+}
+
+// Fetch summer daily temp / sky-condition forecast (Open-Meteo)
+async function fetchSummerForecast() {
+    try {
+        const response = await fetch(TV_CONFIG.summerForecastApi);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.message);
+
+        updateSummerForecast(data.forecast);
+        return data;
+    } catch (error) {
+        console.error('Error fetching summer forecast:', error.message);
+    }
+}
+
+// Short weekday label for a YYYY-MM-DD date (noon avoids TZ off-by-one)
+function summerDayLabel(dateStr, index) {
+    if (index === 0) return 'Today';
+    const d = new Date(`${dateStr}T12:00:00`);
+    return d.toLocaleDateString('en-US', { weekday: 'short' });
+}
+
+// Display summer forecast (daily high/low temp + sun/cloud) in the TV overlay
+function updateSummerForecast(forecast) {
+    if (!elements.videoForecastContent) return;
+
+    if (!forecast?.length) {
+        elements.videoForecastContent.innerHTML = '<div style="color: var(--text-muted);">No forecast data</div>';
+        return;
+    }
+
+    elements.videoForecastContent.classList.toggle('compact', forecast.length > 8);
+
+    let html = '';
+    forecast.forEach((day, i) => {
+        const icon = getSummerWeatherIcon(day.condition);
+        const high = day.tempMax != null ? `${day.tempMax}°` : '--';
+        const low = day.tempMin != null ? `${day.tempMin}°` : '';
+
+        html += `
+            <div class="video-forecast-day summer-day">
+                <div class="video-forecast-day-name">${summerDayLabel(day.date, i)}</div>
+                ${icon}
+                <div class="video-forecast-amount">${high}</div>
+                ${low ? `<div class="video-forecast-freezing">${low}</div>` : ''}
+            </div>
+        `;
+    });
+
+    elements.videoForecastContent.innerHTML = html;
 }
 
 // Display forecast in TV overlay
@@ -271,9 +340,18 @@ function applyDisplaySettings(config) {
     const videoView = document.querySelector('.video-view');
     if (!videoView) return;
 
-    videoView.dataset.webcamSize = config.tvWebcamSize || 'large';
-    videoView.dataset.forecastSize = config.tvForecastSize || 'medium';
-    document.body.dataset.ticker = config.tvTicker || 'show';
+    if (isSummer) {
+        // Summer mode forces bigger webcams and hides the ticker,
+        // regardless of saved winter display settings.
+        videoView.dataset.season = 'summer';
+        videoView.dataset.webcamSize = 'summer';
+        videoView.dataset.forecastSize = config.tvForecastSize || 'medium';
+        document.body.dataset.ticker = 'hidden';
+    } else {
+        videoView.dataset.webcamSize = config.tvWebcamSize || 'large';
+        videoView.dataset.forecastSize = config.tvForecastSize || 'medium';
+        document.body.dataset.ticker = config.tvTicker || 'show';
+    }
 
     const existingWatermark = videoView.querySelector('.tv-watermark');
     if (existingWatermark) existingWatermark.remove();
@@ -288,7 +366,11 @@ function applyDisplaySettings(config) {
 }
 
 async function refreshAll() {
-    await fetchSnowReport();
+    if (isSummer) {
+        await fetchSummerForecast();
+    } else {
+        await fetchSnowReport();
+    }
     updateWebcams();
 }
 
@@ -297,6 +379,22 @@ async function init() {
     // Check for TV token in URL first
     const params = new URLSearchParams(window.location.search);
     const tvToken = params.get('token');
+    // Auto by season, with manual overrides for testing/forcing a mode.
+    isSummer = params.has('winter') ? false
+             : params.has('summer') ? true
+             : isSummerSeason();
+
+    // Apply summer display attributes up front, before any async config load,
+    // so the ticker (and its loading bar) is hidden immediately and stays hidden
+    // even if the config fetch fails.
+    if (isSummer) {
+        const videoView = document.querySelector('.video-view');
+        if (videoView) {
+            videoView.dataset.season = 'summer';
+            videoView.dataset.webcamSize = 'summer';
+        }
+        document.body.dataset.ticker = 'hidden';
+    }
 
     if (tvToken) {
         const valid = await loadUserConfigByToken(tvToken);
@@ -311,6 +409,11 @@ async function init() {
             return;
         }
         await loadUserConfig();
+    }
+
+    // Summer mode plays the Revelstoke downhill MTB set, overriding the winter playlist.
+    if (isSummer) {
+        playlist = [...TV_CONFIG.summerPlaylist];
     }
 
     // Start video

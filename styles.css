@@ -3060,6 +3060,26 @@ body {
     display: none;
 }
 
+/* Summer webcams: a bit larger than the default (280x210) */
+[data-webcam-size="summer"] .video-webcam-wrapper,
+[data-webcam-size="summer"] .video-forecast-webcam {
+    width: 340px;
+    height: 255px;
+}
+
+/* Summer forecast cards (daily temp + sky condition) */
+.video-forecast-day.summer-day {
+    background: var(--bg-card);
+    border-color: var(--accent-warning);
+    border-top-color: var(--accent-warning);
+}
+.video-forecast-day.summer-day .video-forecast-amount {
+    color: var(--accent-warning);
+}
+.video-forecast-day.summer-day .video-forecast-freezing {
+    color: var(--text-muted);
+}
+
 /* Small forecast cards */
 [data-forecast-size="small"] .video-forecast-day {
     padding: 6px 8px;

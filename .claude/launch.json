@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "truflake",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && nvm use 24.22.1 >/dev/null && npm run dev"],
+      "port": 3000
+    }
+  ]
+}

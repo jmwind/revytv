@@ -3,11 +3,14 @@ import * as path from 'node:path'
 import * as assert from 'remix/assert'
 import { describe, it } from 'remix/test'
 
-import { createSnowReportService, extractForecast, parseIssuedAt, parseSnowReport } from '../app/server/snow-report.ts'
+import { SnowReportLayoutError, createSnowReportService, extractForecast, extractZones, parseIssuedAt, parseSnowReport } from '../app/server/snow-report.ts'
 import { createMemoryStore } from '../app/server/storage.ts'
 
 const html = fs.readFileSync(path.join(import.meta.dirname, 'fixtures/snow-report.html'), 'utf8')
-const otherHtml = fs.readFileSync(path.join(import.meta.dirname, 'fixtures/forecast-duplicates.html'), 'utf8')
+// The duplicates fixture is forecast-only, so it gets a stats block the parser can read.
+const otherHtml =
+  '<div>NEW SNOW 9 CM LAST HOUR 1 CM 24 HOURS 20 CM 48 HOURS 30 CM 7 DAYS 40 CM BASE DEPTH 150 CM SEASON TOTAL 500 CM</div>' +
+  fs.readFileSync(path.join(import.meta.dirname, 'fixtures/forecast-duplicates.html'), 'utf8')
 
 describe('extractForecast', () => {
   const forecast = extractForecast(html)
@@ -82,9 +85,67 @@ describe('parseSnowReport', () => {
     assert.ok(data.forecast.length > 0)
   })
 
+  it('reads every snow field from the real page', () => {
+    assert.deepEqual(data.missingFields, [])
+  })
+
   it('reads when Environment Canada issued the forecast, in resort time', () => {
     // The fixture says "Friday February 06, 2026 at 08:00 PST".
     assert.equal(data.forecastIssuedAt, '2026-02-06T16:00:00.000Z')
+  })
+})
+
+describe('changed page layout', () => {
+  it('refuses a page it cannot read instead of reporting a calm day', () => {
+    assert.throws(() => parseSnowReport('<html><body>Snow Report</body></html>'), SnowReportLayoutError)
+  })
+
+  it('names the fields it could not find', () => {
+    try {
+      parseSnowReport('<html></html>')
+      assert.fail('expected a throw')
+    } catch (error) {
+      assert.ok(error instanceof SnowReportLayoutError)
+      assert.ok(error.missingFields.includes('seasonTotal'))
+      assert.ok(error.missingFields.includes('forecast'))
+    }
+  })
+
+  it('tolerates one missing field but records it', () => {
+    let page = html.replace(/LAST\s+HOUR/gi, 'LAST PERIOD')
+    let data = parseSnowReport(page)
+    assert.deepEqual(data.missingFields, ['lastHour'])
+    assert.equal(data.snow.lastHour, 0)
+  })
+
+  it('does not cache or record anything from an unreadable page', async () => {
+    let store = createMemoryStore()
+    let svc = createSnowReportService({
+      storage: store,
+      fetch: (async () => new Response('<html></html>')) as typeof fetch,
+      now: () => new Date('2026-11-27T10:00:00Z'),
+    })
+    await assert.rejects(() => svc.getSnowReport(), SnowReportLayoutError)
+    assert.deepEqual(Object.keys(store.data), [])
+  })
+})
+
+describe('extractZones', () => {
+  it('reads every zone with its state and the resort wording', () => {
+    let zones = extractZones(html)
+    assert.equal(zones.length, 7)
+    assert.deepEqual(zones[0], { name: 'Kill the Banker', state: 'closed', label: 'Closed' })
+    assert.deepEqual(zones[3], { name: 'Lower North Bowl', state: 'open', label: 'Open' })
+    assert.equal(zones.filter((z) => z.state === 'open').length, 6)
+  })
+
+  it('returns no zones when the block is missing', () => {
+    assert.deepEqual(extractZones('<html></html>'), [])
+  })
+
+  it('treats "Opening Soon" as scheduled, not open', () => {
+    let page = html.replace('lift-status--closed', 'lift-status--scheduled').replace('<span class="status-text">Closed</span>', '<span class="status-text">Opening Soon</span>')
+    assert.equal(extractZones(page)[0]?.state, 'scheduled')
   })
 })
 

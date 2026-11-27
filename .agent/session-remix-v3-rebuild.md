@@ -56,3 +56,9 @@ settings, added the historical-season comparison, and redesigned the UI.
 
 - The old "Report X min ago" was our fetch time, reset by the 10-minute cache, and said nothing about the resort. The stamp now shows when the resort's snow and weather figures last differed between fetches (`snow-report:stats` record) and when Environment Canada issued the text forecast (parsed from "Issued by Environment Canada on <date> at <time>"; the snow stats themselves carry no timestamp on the page).
 - The issue time is read as resort local time whatever abbreviation the page prints ("PCT" appeared). Note the local tz database puts America/Vancouver at UTC-7 in Nov 2026, so tests must not hard-code -8 for winter dates after March 2026.
+
+## Zone status and avalanche forecast (2026-11-27)
+
+- The resort's "Zone Status" (Kill the Banker, Subpeak, Southside, Lower North Bowl, Lemming Line, Three Bears, Greely Bowl) lives on the snow report page itself, as `condition__run` blocks with a `lift-status--<state>` class; there is no separate page or API. `extractZones` reads it; a cached report from before the field existed has `zones` undefined, so the page guards with `r?.zones ?? []`.
+- Avalanche Canada's point API (`api.avalanche.ca/forecasts/en/products/point?lat=&long=`) returns the forecast product for the area polygon the resort sits in; the areas endpoint carries no display name, only an id and centroid, so the section is labelled "the forecast area around the resort". Cached one hour with stale fallback, like the historical tracker.
+- Danger scale colours are Avalanche Canada's own (`--danger-1..5`), not theme tokens, so they stay recognisable in both modes.

@@ -1,0 +1,197 @@
+/* Truflake global styles: tokens, base, and the few shared layout classes.
+   Component-local styles live beside their components via css(). */
+@layer base, rmx, app;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+
+    /* Ground and panels: matte paper by day, midnight ink by night. */
+    --paper: light-dark(#f4f4f0, #0f141c);
+    --panel: light-dark(#ffffff, #161c26);
+    --panel-2: light-dark(#f7f7f3, #1b2230);
+    --scrim: light-dark(rgb(21 24 28 / 0.55), rgb(8 11 16 / 0.62));
+
+    /* Ink. */
+    --ink: light-dark(#15181c, #e8ebef);
+    --ink-2: light-dark(#4a5058, #a3abb8);
+    --ink-3: light-dark(#656c78, #848d9c);
+
+    /* Hairlines. */
+    --rule: light-dark(#d9dbd4, #2a3240);
+    --rule-2: light-dark(#e8e9e3, #1f2633);
+    --rule-strong: var(--ink);
+
+    /* Route ink: the one accent. */
+    --route: light-dark(#1d4fd8, #7aa2ff);
+    --route-ink: light-dark(#ffffff, #0f141c);
+    --route-soft: light-dark(#e7edfc, #1c2a4a);
+
+    /* Deltas keep the site's established meaning. */
+    --up: light-dark(#1a7f4b, #5fd39a);
+    --up-soft: light-dark(#e3f3ea, #163326);
+    --down: light-dark(#c2311f, #ff7b6b);
+    --down-soft: light-dark(#fbe7e3, #3a1c18);
+    --flat: var(--ink-3);
+    --warn: light-dark(#a8690f, #f0b84a);
+
+    --radius-s: 2px;
+    --radius-m: 8px;
+
+    --font: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-cond: 'Barlow Semi Condensed', 'Barlow', system-ui, sans-serif;
+
+    --page-max: 1440px;
+    --page-pad: clamp(16px, 2.5vw, 32px);
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--ink-3) transparent;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--route);
+    color: var(--route-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--route);
+    outline-offset: 2px;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible {
+    border-radius: var(--radius-s);
+  }
+
+  a {
+    color: var(--route);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer app {
+  .page {
+    width: min(100%, var(--page-max));
+    margin-inline: auto;
+    padding: 0 var(--page-pad) 48px;
+  }
+
+  /* Section heading: a hairline rule with the title set into it, like a guidebook's route header. */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px 0 10px;
+    border-bottom: 1px solid var(--rule-strong);
+    margin-bottom: 16px;
+  }
+
+  .section-head h2 {
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .section-head .aside {
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+  }
+
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .delta-up {
+    color: var(--up);
+  }
+
+  .delta-down {
+    color: var(--down);
+  }
+
+  .delta-flat {
+    color: var(--flat);
+  }
+}

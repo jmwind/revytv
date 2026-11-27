@@ -1,6 +1,7 @@
-.vercel
-.env*.local
-data/
-dev-server.js
 node_modules/
-.env*
+.vercel
+.env
+.env.*
+data/
+.DS_Store
+.claude/settings.local.json

@@ -167,7 +167,7 @@ const stripStyle = css({
   // against the lifts in words, since the profile chart needs the width.
   '@media (max-width: 720px)': {
     '& .days': { display: 'block' },
-    '& .days .gutter, & .profile, & .caption .profile-note': { display: 'none' },
+    '& .days .gutter, & .profile, & .caption': { display: 'none' },
     '& .day': {
       width: '100%',
       display: 'grid',
@@ -192,7 +192,6 @@ const stripStyle = css({
     '& .spark': { gridArea: 'spark', alignSelf: 'start', marginTop: 0, height: '16px' },
     '& .fl': { gridArea: 'fl', marginTop: 0, textAlign: 'right', lineHeight: 1.25 },
     '& .fl small': { display: 'block', color: 'var(--ink-3)', fontSize: '11px' },
-    '& .caption': { flexDirection: 'column', gap: '4px' },
   },
 })
 
@@ -398,9 +397,8 @@ export const ForecastStrip = clientEntry(
           </div>
           <div class="caption">
             <span class="profile-note">
-              <i></i>Snowing above the freezing level, read against the resort's elevations.
+              <i></i>Snowing above the freezing level
             </span>
-            <span>Sparklines show how each day's forecast has been revised. Click a day for the record.</span>
           </div>
           <div id={`${handle.id}-detail`}>
             {open ? (

@@ -56,8 +56,10 @@ const panelStyle = css({
   },
   '& .verdict .vs': { color: 'var(--ink-2)', fontSize: '13px' },
   '& .verdict .vs b': { fontWeight: 600 },
+  // The band scales with the card: the span is a block so the svg's 100% means the card width.
   '& .chart': { padding: '6px 10px 0', flex: '1 1 auto', display: 'flex', alignItems: 'flex-end' },
-  '& .chart svg': { width: '100%', height: 'auto' },
+  '& .chart .wide, & .chart .narrow': { display: 'block', width: '100%', minWidth: 0 },
+  '& .chart svg': { width: '100%', height: 'auto', display: 'block' },
   '& .chart .narrow': { display: 'none' },
   '& .legend': {
     display: 'flex',

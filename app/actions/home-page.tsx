@@ -7,9 +7,9 @@ import { Nav } from '../ui/nav.tsx'
 import { ForecastStrip } from '../ui/public/forecast-strip.tsx'
 import { Freshness } from '../ui/public/freshness.tsx'
 import { WEBCAMS, WebcamGrid } from '../ui/public/webcams.tsx'
+import { WindyMap } from '../ui/public/windy-map.tsx'
 import { SeasonPanel } from '../ui/season-panel.tsx'
 import { SnowStats } from '../ui/snow-stats.tsx'
-import { WindyMap } from '../ui/windy.tsx'
 import type { Loaded } from './controller.tsx'
 import { Document, type Shell } from './document.tsx'
 
@@ -84,7 +84,7 @@ export function HomePage(handle: Handle<HomePageProps>) {
         description="Revelstoke Mountain Resort snow, forecast revisions, webcams, and how this season compares with every season since 2007."
       >
         <div class="page" mix={layout}>
-          <Nav current="home" meta={r ? <Freshness fetchedAt={r.fetchedAt} fromCache={r.fromCache} /> : undefined} />
+          <Nav current="home" meta={r ? <Freshness changedAt={r.statsChangedAt} issuedAt={r.forecastIssuedAt} fetchedAt={r.fetchedAt} /> : undefined} />
 
           <div class="top">
             {r ? <SnowStats report={r} /> : <Notice what="Snow report" error={report.error} />}

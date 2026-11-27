@@ -1,11 +1,12 @@
 // Fetch and parse the resort snow report, and record how forecasts change.
-import { assignForecastDates } from './forecast-dates.ts'
+import { RESORT_TIMEZONE, assignForecastDates } from './forecast-dates.ts'
 import { storage as defaultStorage, type ForecastRevision, type KeyValueStore, type StorageMode } from './storage.ts'
 
 export type { ForecastRevision }
 
 export const SNOW_REPORT_URL = 'https://www.revelstokemountainresort.com/mountain/conditions/snow-report/'
 const CACHE_KEY = 'snow-report:cache'
+const STATS_KEY = 'snow-report:stats'
 const CACHE_TTL_SECONDS = 600
 const MAX_HISTORY_ENTRIES = 30
 const USER_AGENT = 'Mozilla/5.0 (compatible; RevyTV/1.0)'
@@ -47,12 +48,17 @@ export interface ParsedSnowReport {
   weather: Weather
   snow: SnowStats
   forecast: ParsedForecastDay[]
+  /** When Environment Canada issued the text forecast on the page, or null if not stated. */
+  forecastIssuedAt: string | null
 }
 
 export interface SnowReport {
   weather: Weather
   snow: SnowStats
   forecast: ForecastDay[]
+  forecastIssuedAt: string | null
+  /** When the resort's snow and weather figures last differed from the previous fetch. */
+  statsChangedAt: string
   fetchedAt: string
   source: string
   storageMode: StorageMode
@@ -76,6 +82,12 @@ export interface NewSnowRecord {
   date: string
   newSnow: number
   recordedAt: string
+}
+
+interface StatsRecord {
+  snow: SnowStats
+  weather: Weather
+  changedAt: string
 }
 
 export interface SnowReportDeps {
@@ -122,7 +134,44 @@ export function parseSnowReport(html: string): ParsedSnowReport {
     seasonTotal: cm(/SEASON\s+TOTAL[\s\S]{0,100}?(\d+)\s*CM/i),
   }
 
-  return { weather, snow, forecast: extractForecast(html) }
+  return { weather, snow, forecast: extractForecast(html), forecastIssuedAt: parseIssuedAt(text) }
+}
+
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+
+// "Issued by Environment Canada on Friday November 27, 2026 at 01:00 PCT." The zone
+// abbreviation on the page is unreliable, so the time is read as resort local time.
+export function parseIssuedAt(text: string): string | null {
+  let match = text.match(/Issued by\s+Environment Canada\s+on\s+\w+,?\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s+at\s+(\d{1,2}):(\d{2})/i)
+  if (!match) return null
+  let month = MONTHS.indexOf((match[1] ?? '').toLowerCase())
+  if (month < 0) return null
+  let [day, year, hour, minute] = [match[2], match[3], match[4], match[5]].map((v) => parseInt(v ?? '', 10))
+  if ([day, year, hour, minute].some((v) => !Number.isFinite(v))) return null
+  return resortLocalToIso(year!, month + 1, day!, hour!, minute!)
+}
+
+function zoneOffsetMs(date: Date): number {
+  let parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: RESORT_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  let pick = (type: string): number => Number(parts.find((p) => p.type === type)?.value ?? '0')
+  let asUtc = Date.UTC(pick('year'), pick('month') - 1, pick('day'), pick('hour'), pick('minute'), pick('second'))
+  return asUtc - date.getTime()
+}
+
+function resortLocalToIso(year: number, month: number, day: number, hour: number, minute: number): string {
+  let guess = Date.UTC(year, month - 1, day, hour, minute)
+  let utc = guess - zoneOffsetMs(new Date(guess))
+  let settled = guess - zoneOffsetMs(new Date(utc))
+  return new Date(settled).toISOString()
 }
 
 // Alpine forecast only, in document order; day names may repeat in 10-day forecasts.
@@ -174,15 +223,19 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
     let fetchedAtDate = now()
     let fetchedAt = fetchedAtDate.toISOString()
 
-    let forecast = await trackForecastHistory(parsed.forecast, fetchedAtDate)
-
-    if (parsed.snow.seasonTotal) await storeSeasonTotal(parsed.snow.seasonTotal, fetchedAt)
-    await storeNewSnow(parsed.snow.newSnow, fetchedAt)
+    let [forecast, statsChangedAt] = await Promise.all([
+      trackForecastHistory(parsed.forecast, fetchedAtDate),
+      trackStatsChange(parsed.snow, parsed.weather, fetchedAt),
+      parsed.snow.seasonTotal ? storeSeasonTotal(parsed.snow.seasonTotal, fetchedAt) : Promise.resolve(),
+      storeNewSnow(parsed.snow.newSnow, fetchedAt),
+    ])
 
     let report: SnowReport = {
       weather: parsed.weather,
       snow: parsed.snow,
       forecast,
+      forecastIssuedAt: parsed.forecastIssuedAt,
+      statsChangedAt,
       fetchedAt,
       source: SNOW_REPORT_URL,
       storageMode: storage.storageMode(),
@@ -190,6 +243,20 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
 
     await storage.set(CACHE_KEY, report, CACHE_TTL_SECONDS)
     return report
+  }
+
+  // The resort's figures move a few times a day at most; remember when they last did.
+  async function trackStatsChange(snow: SnowStats, weather: Weather, fetchedAt: string): Promise<string> {
+    let previous = await storage.get<StatsRecord>(STATS_KEY)
+    if (
+      previous &&
+      JSON.stringify(previous.snow) === JSON.stringify(snow) &&
+      JSON.stringify(previous.weather) === JSON.stringify(weather)
+    ) {
+      return previous.changedAt
+    }
+    await storage.set(STATS_KEY, { snow, weather, changedAt: fetchedAt } satisfies StatsRecord)
+    return fetchedAt
   }
 
   // One season-total record per day, first write wins.
@@ -211,18 +278,16 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
 
   async function trackForecastHistory(forecasts: ParsedForecastDay[], fetchedAtDate: Date): Promise<ForecastDay[]> {
     let fetchedAt = fetchedAtDate.toISOString()
-    let updated: ForecastDay[] = []
     let dateKeys = assignForecastDates(
       forecasts.map((f) => f.day),
       fetchedAtDate,
     )
 
-    for (let [i, forecast] of forecasts.entries()) {
-      let dateInfo = dateKeys[i] ?? null
-      if (!dateInfo) {
-        updated.push({ ...forecast, history: [] })
-        continue
-      }
+    let tracked = await Promise.all(forecasts.map((forecast, i) => trackOne(forecast, dateKeys[i] ?? null)))
+    return tracked
+
+    async function trackOne(forecast: ParsedForecastDay, dateInfo: (typeof dateKeys)[number] | null): Promise<ForecastDay> {
+      if (!dateInfo) return { ...forecast, history: [] }
 
       let storageKey = `forecast:${dateInfo.key}`
       let record = await storage.getWithMock<ForecastRecord>(storageKey, forecast.amount, dateInfo.key)
@@ -241,10 +306,8 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
       }
 
       let history = await getMergedHistoryForDate(dateInfo.date, dateInfo.key)
-      updated.push({ ...forecast, actualDate: dateInfo.date, history })
+      return { ...forecast, actualDate: dateInfo.date, history }
     }
-
-    return updated
   }
 
   // Plain weekday history plus this period's key, never day mixed with night.
@@ -253,8 +316,7 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
     if (currentKey !== dateStr) keys.push(`forecast:${currentKey}`)
 
     let all: ForecastRevision[] = []
-    for (let key of keys) {
-      let record = await storage.get<ForecastRecord>(key)
+    for (let record of await Promise.all(keys.map((key) => storage.get<ForecastRecord>(key)))) {
       if (record?.history?.length) all.push(...record.history)
     }
     all.sort((a, b) => new Date(a.firstSeen).getTime() - new Date(b.firstSeen).getTime())

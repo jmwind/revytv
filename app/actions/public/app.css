@@ -36,8 +36,8 @@
     --warn: light-dark(#a8690f, #f0b84a);
 
     /* Weather scene: falling flakes, the drift they pile into, rain streaks. */
-    --flake: light-dark(rgb(96 128 170 / 0.55), rgb(255 255 255 / 0.85));
-    --drift: light-dark(rgb(205 220 238 / 0.9), rgb(190 205 228 / 0.5));
+    --flake: light-dark(rgb(96 128 170 / 0.35), rgb(255 255 255 / 0.45));
+    --drift: light-dark(rgb(205 220 238 / 0.6), rgb(190 205 228 / 0.28));
     --rain: light-dark(rgb(70 110 180 / 0.45), rgb(150 190 255 / 0.5));
 
     --radius-s: 2px;

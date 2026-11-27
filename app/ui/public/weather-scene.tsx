@@ -170,7 +170,7 @@ export const WeatherScene = clientEntry(import.meta.url, function WeatherScene(h
         ctx.quadraticCurveTo(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2)
       }
       ctx.strokeStyle = colors.flake
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 1
       ctx.stroke()
     }
 

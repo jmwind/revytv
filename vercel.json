@@ -2,9 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.js": {
-      "includeFiles": "{app/**,public/**,tsconfig.json,node_modules/remix/**,node_modules/@remix-run/**}",
+      "includeFiles": "{{app,public}/**,tsconfig.json,package.json,node_modules/**}",
       "maxDuration": 30
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
 }

@@ -37,3 +37,9 @@ settings, added the historical-season comparison, and redesigned the UI.
 
 - The resort's historical tracker is not anchored to Nov 1 for the season in progress: on 26 Nov the 26-27 series already had 36 points (it counts from their first logging day). `alignResortSeries` slides such a series back so it ends today, or yesterday when the live season total is already higher. Completed seasons are untouched.
 - Our own daily `snowfall:` records win over the resort's points, and the resort fills the days before we started recording (`mergeCurrentSeason`). Before this, one record of our own made the chart drop the resort's line and draw a single dot.
+
+## Vercel deploy (2026-11-26)
+
+- The function must ship `node_modules/**` (vercel.json includeFiles). nft only traces static imports; Remix's asset server loads platform binaries by dynamic require, resolves `@oxc-project/runtime` with `import.meta.resolve`, and walks the full dependency closure of `remix` for its access policy. Cherry-picking packages took three failed deploys; the whole folder is ~70 MB and works.
+- `includeFiles` is one glob string capped at 256 characters.
+- Preview URLs sit behind Vercel deployment protection: check them with `vercel curl <url>/<path>` and read crashes with `vercel logs --deployment <host> --json`.

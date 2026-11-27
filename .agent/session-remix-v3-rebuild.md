@@ -51,3 +51,8 @@ settings, added the historical-season comparison, and redesigned the UI.
 - The 40-module ESM graph is Remix v3's unbundled design; `modulepreload` already loads it in parallel and the CDN serves it immutable after the first visitor per region. Not worth fighting.
 - Local JSON storage ignored TTLs, so the dev snow report never refreshed ("Report 19 hr ago"). Entries written with a TTL are now wrapped with `__expiresAt`.
 - Canvas cannot read `light-dark()` tokens: the weather scene sets `color`, `border-color` and `caret-color` to the tokens and reads the resolved values from `getComputedStyle`.
+
+## Freshness stamp (2026-11-27)
+
+- The old "Report X min ago" was our fetch time, reset by the 10-minute cache, and said nothing about the resort. The stamp now shows when the resort's snow and weather figures last differed between fetches (`snow-report:stats` record) and when Environment Canada issued the text forecast (parsed from "Issued by Environment Canada on <date> at <time>"; the snow stats themselves carry no timestamp on the page).
+- The issue time is read as resort local time whatever abbreviation the page prints ("PCT" appeared). Note the local tz database puts America/Vancouver at UTC-7 in Nov 2026, so tests must not hard-code -8 for winter dates after March 2026.

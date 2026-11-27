@@ -84,7 +84,7 @@ export function HomePage(handle: Handle<HomePageProps>) {
         description="Revelstoke Mountain Resort snow, forecast revisions, webcams, and how this season compares with every season since 2007."
       >
         <div class="page" mix={layout}>
-          <Nav current="home" meta={r ? <Freshness fetchedAt={r.fetchedAt} fromCache={r.fromCache} /> : undefined} />
+          <Nav current="home" meta={r ? <Freshness changedAt={r.statsChangedAt} issuedAt={r.forecastIssuedAt} fetchedAt={r.fetchedAt} /> : undefined} />
 
           <div class="top">
             {r ? <SnowStats report={r} /> : <Notice what="Snow report" error={report.error} />}

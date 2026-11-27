@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Truflake Open Graph card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600&display=block">
+<style>
+  /* 1200x630 Open Graph card. Rendered to public/og.png with headless Chrome; see design/README. */
+  html, body { margin: 0; background: #0f141c; }
+  .card {
+    position: relative; width: 1200px; height: 630px; overflow: hidden;
+    background:
+      radial-gradient(60% 50% at 56% 44%, rgb(122 162 255 / 0.16), transparent 70%),
+      linear-gradient(180deg, #080d14 0%, #0f141c 55%, #121a26 100%);
+    font-family: 'Barlow', system-ui, sans-serif; color: #e8ebef;
+  }
+  svg.ridge, svg.snow { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .brand { position: absolute; left: 72px; top: 60px; display: flex; align-items: center; gap: 14px; }
+  .brand b { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+  .domain {
+    position: absolute; right: 72px; top: 66px;
+    font-family: 'Barlow Semi Condensed', sans-serif; font-size: 20px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #848d9c;
+  }
+  h1 {
+    position: absolute; left: 68px; top: 178px; margin: 0;
+    font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 600; font-size: 128px; line-height: 0.92;
+    letter-spacing: 0.005em; text-transform: uppercase;
+    text-shadow: 0 2px 0 rgb(0 0 0 / 0.25), 0 0 40px rgb(15 20 28 / 0.9);
+  }
+  h1 small { display: block; color: #7aa2ff; }
+  p {
+    position: absolute; left: 72px; top: 438px; margin: 0; width: 760px;
+    font-size: 26px; line-height: 1.3; font-weight: 400; color: #c3cad6;
+    text-shadow: 0 0 24px rgb(15 20 28 / 0.95), 0 1px 0 rgb(0 0 0 / 0.3);
+  }
+  p b { color: #e8ebef; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="card">
+  <svg class="ridge" viewBox="0 0 1200 630" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#dfe8f4" stop-opacity="0.95"/>
+        <stop offset="0.16" stop-color="#9fb4d2" stop-opacity="0.35"/>
+        <stop offset="0.5" stop-color="#3a4d66" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="far-cap" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#b8c8dd" stop-opacity="0.55"/>
+        <stop offset="0.35" stop-color="#1a2638" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0f141c" stop-opacity="0"/>
+        <stop offset="1" stop-color="#0f141c" stop-opacity="0.55"/>
+      </linearGradient>
+    </defs>
+    <!-- Far range -->
+    <path d="M0 470 L110 428 L205 446 L310 400 L410 428 L505 392 L565 412 L672 356 L770 398 L865 374 L960 410 L1055 388 L1200 426 L1200 630 L0 630 Z" fill="#1a2638"/>
+    <path d="M0 470 L110 428 L205 446 L310 400 L410 428 L505 392 L565 412 L672 356 L770 398 L865 374 L960 410 L1055 388 L1200 426 L1200 630 L0 630 Z" fill="url(#far-cap)"/>
+    <!-- Main ridge: Subpeak top centre-right, the North Bowl shoulder left, Greely right -->
+    <path d="M0 568 L145 518 L255 488 L360 470 L455 436 L552 398 L660 334 L720 356 L792 392 L888 426 L985 464 L1080 490 L1200 514 L1200 630 L0 630 Z" fill="#223349"/>
+    <path d="M0 568 L145 518 L255 488 L360 470 L455 436 L552 398 L660 334 L720 356 L792 392 L888 426 L985 464 L1080 490 L1200 514 L1200 630 L0 630 Z" fill="url(#cap)"/>
+    <!-- Contours -->
+    <path d="M70 562 Q265 496 480 474 T912 496 T1200 568" fill="none" stroke="#a3b4cc" stroke-opacity="0.22" stroke-width="1.2"/>
+    <path d="M0 598 Q312 538 625 510 T1200 584" fill="none" stroke="#a3b4cc" stroke-opacity="0.18" stroke-width="1.2"/>
+    <!-- Ski-area boundary -->
+    <path d="M40 630 L160 562 L300 522 L400 510 L505 466 L600 420 L660 342 L744 420 L840 466 L950 518 L1055 554 L1150 630" fill="none" stroke="#c7d3e6" stroke-opacity="0.55" stroke-width="1.6" stroke-dasharray="7 9"/>
+    <!-- Foreground slope and ground haze -->
+    <path d="M0 630 L0 604 L190 582 L385 594 L580 572 L770 588 L960 574 L1200 598 L1200 630 Z" fill="#141d2b"/>
+    <rect x="0" y="470" width="1200" height="160" fill="url(#haze)"/>
+  </svg>
+
+  <div class="brand">
+    <svg width="40" height="40" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill="#7aa2ff"/>
+      <g stroke="#0f141c" stroke-width="2" stroke-linecap="round">
+        <line x1="16" y1="6" x2="16" y2="26"/><line x1="6" y1="16" x2="26" y2="16"/>
+        <line x1="9" y1="9" x2="23" y2="23"/><line x1="23" y1="9" x2="9" y2="23"/>
+        <line x1="16" y1="9" x2="13" y2="12"/><line x1="16" y1="9" x2="19" y2="12"/>
+        <line x1="16" y1="23" x2="13" y2="20"/><line x1="16" y1="23" x2="19" y2="20"/>
+        <line x1="9" y1="16" x2="12" y2="13"/><line x1="9" y1="16" x2="12" y2="19"/>
+        <line x1="23" y1="16" x2="20" y2="13"/><line x1="23" y1="16" x2="20" y2="19"/>
+      </g>
+    </svg>
+    <b>Truflake</b>
+  </div>
+  <div class="domain">truflake.com</div>
+
+  <h1>Revy snow<small>for nerds</small></h1>
+  <p>Revelstoke Mountain Resort <b>overnight totals</b>, the alpine forecast, zone status, webcams and <b>every season since 2007</b>.</p>
+
+  <svg class="snow" id="snow" viewBox="0 0 1200 630" aria-hidden="true">
+    <defs>
+      <filter id="soft"><feGaussianBlur stdDeviation="1.1"/></filter>
+      <filter id="bokeh"><feGaussianBlur stdDeviation="3.2"/></filter>
+      <linearGradient id="drift" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#eef3fa"/>
+        <stop offset="1" stop-color="#b9c9e0"/>
+      </linearGradient>
+    </defs>
+    <g id="flakes"></g>
+    <path id="pile" fill="url(#drift)"/>
+    <path id="rim" fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="1.5"/>
+  </svg>
+</div>
+<script>
+  // Deterministic snow so every render is the same picture.
+  let seed = 20261127
+  let rand = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296
+  let W = 1200, H = 630
+  let flakes = document.getElementById('flakes')
+  let make = (n, rmin, rmax, omin, omax, filter) => {
+    for (let i = 0; i < n; i++) {
+      let c = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+      let r = rmin + rand() * (rmax - rmin)
+      c.setAttribute('cx', (rand() * W).toFixed(1))
+      c.setAttribute('cy', (rand() * (H - 40)).toFixed(1))
+      c.setAttribute('r', r.toFixed(2))
+      c.setAttribute('fill', '#ffffff')
+      c.setAttribute('fill-opacity', (omin + rand() * (omax - omin)).toFixed(2))
+      if (filter) c.setAttribute('filter', filter)
+      flakes.appendChild(c)
+    }
+  }
+  make(260, 1.0, 2.4, 0.35, 0.9)           // fine, sharp snow
+  make(90, 2.4, 4.2, 0.45, 0.95, 'url(#soft)') // mid, slightly soft
+  make(26, 6, 12, 0.10, 0.22, 'url(#bokeh)')  // close, out of focus
+
+  // The drift along the bottom edge, piled a little deeper on the left.
+  let cols = 60, step = W / cols, pts = []
+  for (let i = 0; i <= cols; i++) {
+    let x = i * step
+    let base = 34 + 16 * (1 - x / W)
+    let y = H - (base + Math.sin(i * 0.9) * 6 + Math.sin(i * 0.37 + 1.3) * 9 + (rand() - 0.5) * 3)
+    pts.push([x, y])
+  }
+  let d = `M${pts[0][0]} ${pts[0][1].toFixed(1)}`
+  for (let i = 1; i < pts.length; i++) {
+    let [x0, y0] = pts[i - 1], [x1, y1] = pts[i]
+    d += ` Q${x0.toFixed(1)} ${y0.toFixed(1)} ${((x0 + x1) / 2).toFixed(1)} ${((y0 + y1) / 2).toFixed(1)}`
+  }
+  d += ` L${W} ${pts[pts.length - 1][1].toFixed(1)}`
+  document.getElementById('rim').setAttribute('d', d)
+  document.getElementById('pile').setAttribute('d', d + ` L${W} ${H} L0 ${H} Z`)
+</script>
+</body>
+</html>

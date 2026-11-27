@@ -75,7 +75,7 @@ export function HistoryPage(handle: Handle<{ shell: Shell; season: Loaded<Season
     let maxTotal = rows.reduce((m, r) => Math.max(m, r.total), 0)
 
     return (
-      <Document shell={shell} title="Every season since 2007 · Truflake" description="This season's snowfall against every Revelstoke season since 2007-08.">
+      <Document shell={shell} path="/history" title="Every season since 2007 · Truflake" description="This season's snowfall against every Revelstoke season since 2007-08.">
         <div class="page" mix={style}>
           <Nav current="history" />
           {s && c ? (

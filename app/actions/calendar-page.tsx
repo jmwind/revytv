@@ -186,7 +186,7 @@ export function CalendarPage(handle: Handle<{ shell: Shell; year: number; calend
     }
 
     return (
-      <Document shell={shell} title={`${year} forecast calendar · Truflake`} description="Every day's forecast revisions and what actually fell.">
+      <Document shell={shell} path="/calendar" title={`${year} forecast calendar · Truflake`} description="Every day's forecast revisions and what actually fell.">
         <div class="page" mix={style}>
           <Nav current="calendar" />
           <div class="head">

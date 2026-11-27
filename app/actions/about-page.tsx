@@ -43,7 +43,7 @@ const style = css({
 // The origin story. Kept funny on purpose.
 export function AboutPage(handle: Handle<{ shell: Shell }>) {
   return () => (
-    <Document shell={handle.props.shell} title="About · Truflake" description="Why Revy Snow for Nerds exists.">
+    <Document shell={handle.props.shell} path="/about" title="About · Truflake" description="Why Revy Snow for Nerds exists.">
       <div class="page" mix={style}>
         <Nav current="about" />
         <article>

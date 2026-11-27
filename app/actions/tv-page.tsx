@@ -61,7 +61,7 @@ export function TvPage(handle: Handle<TvPageProps>) {
     let { shell, summer, report, summerForecast } = handle.props
     let r = report.value
     return (
-      <Document shell={shell} title={`TV mode · Truflake`} bodyClass="tv">
+      <Document shell={shell} path="/tv" title={`TV mode · Truflake`} bodyClass="tv">
         <main mix={style} aria-label="TV mode">
           <TvPlayer playlist={summer ? SUMMER_PLAYLIST : WINTER_PLAYLIST} />
           <TvBoard

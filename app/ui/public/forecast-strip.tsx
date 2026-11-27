@@ -34,16 +34,6 @@ const Y_MAX = 2350
 const Y_MIN = 400
 const PLOT_H = 150
 
-// Where the freezing level sits on the mountain, in words: "above Top Gon", "below Mid Gon".
-function freezingRelation(level: number | 'valley bottom' | null): string {
-  if (level == null) return 'no level given'
-  if (level === 'valley bottom') return 'freezing to the village'
-  if (level > ELEVATIONS[0]!.m) return 'rain to the summit'
-  if (level <= ELEVATIONS[ELEVATIONS.length - 1]!.m) return 'snow to the village'
-  let lowestAbove = ELEVATIONS.filter((e) => e.m >= level).sort((a, b) => a.m - b.m)[0]
-  return lowestAbove ? `snow from ${lowestAbove.label} up` : 'snow to the village'
-}
-
 function elevationY(m: number): number {
   let clamped = Math.min(Y_MAX, Math.max(Y_MIN, m))
   return ((Y_MAX - clamped) / (Y_MAX - Y_MIN)) * PLOT_H
@@ -342,7 +332,7 @@ export const ForecastStrip = clientEntry(
                     </span>
                     <span class="fl">
                       {freezingShort(d.freezingLevel)}
-                      <small>{freezingRelation(d.freezingLevel)}</small>
+                      <small>freezing level</small>
                     </span>
                   </button>
                 )

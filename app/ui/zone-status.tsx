@@ -16,12 +16,18 @@ interface Place {
 
 const PLACES: Record<string, Place> = {
   Subpeak: { x: 55, y: 14, mx: 54, my: 12 },
-  'Kill the Banker': { x: 44, y: 30, mx: 44, my: 30, flip: true },
-  'Lemming Line': { x: 69, y: 32, mx: 66, my: 32 },
-  'Lower North Bowl': { x: 23, y: 46, mx: 48, my: 50, flip: true },
-  'Greely Bowl': { x: 66, y: 56, mx: 64, my: 60 },
-  'Three Bears': { x: 36, y: 70, mx: 36, my: 74, flip: true },
-  Southside: { x: 86, y: 68, mx: 76, my: 82, flip: true },
+  'Greely Bowl': { x: 65, y: 22, mx: 64, my: 26 },
+  'Lemming Line': { x: 49, y: 28, mx: 50, my: 26, flip: true },
+  'Kill the Banker': { x: 50, y: 44, mx: 50, my: 42 },
+  'Three Bears': { x: 37, y: 39, mx: 36, my: 44, flip: true },
+  'Lower North Bowl': { x: 30, y: 51, mx: 48, my: 72, flip: true },
+}
+
+// Zones the resort lists that nobody plans a day around.
+const HIDDEN = new Set(['Southside'])
+
+export function visibleZones(zones: Zone[]): Zone[] {
+  return zones.filter((z) => !HIDDEN.has(z.name))
 }
 
 const style = css({
@@ -147,8 +153,9 @@ const style = css({
 })
 
 export function zoneSummary(zones: Zone[]): string {
-  let open = zones.filter((z) => z.state === 'open').length
-  return `${open} of ${zones.length} open`
+  let shown = visibleZones(zones)
+  let open = shown.filter((z) => z.state === 'open').length
+  return `${open} of ${shown.length} open`
 }
 
 function Pin(handle: Handle<{ zone: Zone; place: Place }>) {
@@ -172,8 +179,9 @@ function Pin(handle: Handle<{ zone: Zone; place: Place }>) {
 // The resort's alpine zones pinned on a painted ridge, trail-map style. Links to the resort's page.
 export function ZoneStatus(handle: Handle<{ zones: Zone[] }>) {
   return () => {
-    let placed = handle.props.zones.filter((z) => PLACES[z.name])
-    let extra = handle.props.zones.filter((z) => !PLACES[z.name])
+    let zones = visibleZones(handle.props.zones)
+    let placed = zones.filter((z) => PLACES[z.name])
+    let extra = zones.filter((z) => !PLACES[z.name])
     return (
       <a class="panel" href={SNOW_REPORT_URL} target="_blank" rel="noopener" aria-label="Zone status on the resort's snow report" mix={style}>
         <svg class="ridge" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">

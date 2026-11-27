@@ -1,4 +1,4 @@
-import { clientEntry, css, on } from 'remix/component'
+import { clientEntry, css, on, ref } from 'remix/component'
 import type { Handle } from 'remix/component'
 
 import { Arrow, Close, WeatherIcon, weatherKind } from './icons.tsx'
@@ -92,9 +92,6 @@ const stripStyle = css({
   '& .day.snow': { '--tone': 'var(--up)', background: 'var(--up-soft)' },
   '& .day.calm': { '--tone': 'var(--down)', background: 'var(--down-soft)' },
   '& .day:hover': { filter: 'saturate(1.3)' },
-  '& .day[aria-expanded="true"]': {
-    boxShadow: 'inset 0 3px 0 var(--tone), inset 0 -3px 0 var(--route)',
-  },
   '& .day .name': { fontWeight: 600, fontSize: '13px', lineHeight: 1.2 },
   '& .day .date': { color: 'var(--ink-3)', fontSize: '12px' },
   '& .day .icon': { color: 'var(--tone)', margin: '4px 0 2px' },
@@ -183,7 +180,6 @@ const stripStyle = css({
       boxShadow: 'inset 3px 0 0 var(--tone)',
     },
     '& .day:last-child': { borderBottom: 0 },
-    '& .day[aria-expanded="true"]': { boxShadow: 'inset 3px 0 0 var(--tone), inset -3px 0 0 var(--route)' },
     '& .day .name': { gridArea: 'name', alignSelf: 'end' },
     '& .day .date': { gridArea: 'date', alignSelf: 'start' },
     '& .day .icon': { gridArea: 'icon', margin: 0 },
@@ -195,8 +191,30 @@ const stripStyle = css({
   },
 })
 
+// The day detail opens as a modal so the page never has to scroll to it.
+const dialogStyle = css({
+  padding: 0,
+  border: '1px solid var(--rule)',
+  borderRadius: 'var(--radius-m)',
+  background: 'var(--panel)',
+  color: 'var(--ink)',
+  width: 'min(94vw, 860px)',
+  maxHeight: '90vh',
+  overflow: 'auto',
+  boxShadow: '0 24px 64px rgb(0 0 0 / 0.35)',
+  '&::backdrop': { background: 'var(--scrim)', backdropFilter: 'blur(2px)' },
+  '@media (max-width: 720px)': {
+    // A sheet from the bottom edge on phones.
+    width: '100%',
+    maxWidth: '100%',
+    margin: 'auto 0 0',
+    maxHeight: '88vh',
+    borderRadius: 'var(--radius-m) var(--radius-m) 0 0',
+    borderBottom: 0,
+  },
+})
+
 const detailStyle = css({
-  borderTop: '1px solid var(--rule-strong)',
   padding: '16px 20px 20px',
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)',
@@ -252,10 +270,21 @@ export const ForecastStrip = clientEntry(
   import.meta.url,
   function ForecastStrip(handle: Handle<{ days: ForecastDayLite[] }>) {
     let selected: number | null = null
+    let dialog: HTMLDialogElement | undefined
 
-    let toggle = (i: number) => {
-      selected = selected === i ? null : i
+    let show = (i: number) => {
+      selected = i
       handle.update()
+      handle.queueTask(() => {
+        if (dialog && !dialog.open) dialog.showModal()
+      })
+    }
+    let hide = () => {
+      dialog?.close()
+      if (selected != null) {
+        selected = null
+        handle.update()
+      }
     }
 
     return () => {
@@ -283,9 +312,8 @@ export const ForecastStrip = clientEntry(
                     key={`${d.actualDate ?? ''}:${d.day}:${i}`}
                     type="button"
                     class={cls}
-                    aria-expanded={selected === i}
-                    aria-controls={`${handle.id}-detail`}
-                    mix={on('click', () => toggle(i))}
+                    aria-haspopup="dialog"
+                    mix={on('click', () => show(i))}
                   >
                     <span class="name">{d.day}</span>
                     <span class="date">{d.actualDate ? formatShortDate(d.actualDate) : ''}</span>
@@ -400,13 +428,28 @@ export const ForecastStrip = clientEntry(
               <i></i>Snowing above the freezing level
             </span>
           </div>
-          <div id={`${handle.id}-detail`}>
+          <dialog
+            mix={[
+              dialogStyle,
+              ref((node) => (dialog = node)),
+              on('click', (event) => {
+                if (event.target === event.currentTarget) hide()
+              }),
+              on('close', () => {
+                if (selected != null) {
+                  selected = null
+                  handle.update()
+                }
+              }),
+            ]}
+            aria-labelledby={`${handle.id}-detail-title`}
+          >
             {open ? (
               <div mix={detailStyle}>
                 <header>
-                  <h3>{open.day}</h3>
+                  <h3 id={`${handle.id}-detail-title`}>{open.day}</h3>
                   <span class="date">{open.actualDate ?? ''}</span>
-                  <button type="button" aria-label="Close details" mix={on('click', () => toggle(selected!))}>
+                  <button type="button" aria-label="Close details" mix={on('click', hide)}>
                     <Close size={14} />
                   </button>
                 </header>
@@ -467,7 +510,7 @@ export const ForecastStrip = clientEntry(
                 </div>
               </div>
             ) : null}
-          </div>
+          </dialog>
         </section>
       )
     }

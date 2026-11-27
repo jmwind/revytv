@@ -10,7 +10,6 @@ const style = css({
   fontSize: '12px',
   whiteSpace: 'nowrap',
   '& b': { color: 'var(--ink-2)', fontWeight: 500 },
-  '& .sep': { margin: '0 5px', opacity: 0.6 },
 })
 
 export interface FreshnessProps {
@@ -22,7 +21,7 @@ export interface FreshnessProps {
   fetchedAt: string
 }
 
-// "Updated 2 hr ago · Forecast 1:00 a.m." that keeps counting, and reloads the page every ten minutes.
+// "Forecast 1:00 a.m.", with the rest in the tooltip; reloads the page every ten minutes.
 export const Freshness = clientEntry(import.meta.url, function Freshness(handle: Handle<FreshnessProps>) {
   let now: number | null = null
 
@@ -46,20 +45,23 @@ export const Freshness = clientEntry(import.meta.url, function Freshness(handle:
   return () => {
     let { changedAt, issuedAt, fetchedAt } = handle.props
     let title = [
-      `Resort figures last changed ${formatDateTime(changedAt)}`,
       issuedAt ? `Environment Canada forecast issued ${formatDateTime(issuedAt)}` : null,
+      `Resort figures last changed ${formatDateTime(changedAt)}`,
       `Page checked ${formatTime(fetchedAt)}, every 10 minutes`,
     ]
       .filter(Boolean)
       .join(' · ')
     return (
       <span mix={style} title={title}>
-        Updated <b>{now ? agoLabel(changedAt, now) : formatTime(changedAt)}</b>
         {issuedAt ? (
           <>
-            <span class="sep">·</span>Forecast <b>{formatTime(issuedAt)}</b>
+            Forecast <b>{formatTime(issuedAt)}</b>
           </>
-        ) : null}
+        ) : (
+          <>
+            Checked <b>{now ? agoLabel(fetchedAt, now) : formatTime(fetchedAt)}</b>
+          </>
+        )}
       </span>
     )
   }

@@ -7,7 +7,10 @@ import { assignForecastDates, dayNameToDateKey } from '../app/server/forecast-da
 import { createSnowReportService, extractForecast, type ForecastRecord } from '../app/server/snow-report.ts'
 import { createMemoryStore } from '../app/server/storage.ts'
 
-const duplicateHtml = fs.readFileSync(path.join(import.meta.dirname, 'fixtures/forecast-duplicates.html'), 'utf8')
+// The fixture is forecast-only; the parser now refuses a page without snow stats, so add some.
+const duplicateHtml =
+  '<div>NEW SNOW 9 CM LAST HOUR 1 CM 24 HOURS 20 CM 48 HOURS 30 CM 7 DAYS 40 CM BASE DEPTH 150 CM SEASON TOTAL 500 CM</div>' +
+  fs.readFileSync(path.join(import.meta.dirname, 'fixtures/forecast-duplicates.html'), 'utf8')
 
 function dateOf(day: string, ref: Date, offset = 0): string {
   let result = dayNameToDateKey(day, ref, offset)

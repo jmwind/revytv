@@ -50,6 +50,19 @@ export interface ParsedSnowReport {
   forecast: ParsedForecastDay[]
   /** When Environment Canada issued the text forecast on the page, or null if not stated. */
   forecastIssuedAt: string | null
+  /** Snow fields whose pattern did not match; a missing field reads as 0 cm. */
+  missingFields: string[]
+}
+
+// Fields the page always carries. When two or more fail to parse the markup has
+// changed, and a page of zeros must not be mistaken for a calm day.
+const CORE_FIELDS = ['newSnow', 'twentyFourHour', 'baseDepth', 'seasonTotal'] as const
+
+export class SnowReportLayoutError extends Error {
+  constructor(public missingFields: string[]) {
+    super(`Snow report page layout changed: could not read ${missingFields.join(', ')}`)
+    this.name = 'SnowReportLayoutError'
+  }
 }
 
 export interface SnowReport {
@@ -119,22 +132,34 @@ export function parseSnowReport(html: string): ParsedSnowReport {
     weather.windDirection = windMatch[1].charAt(0).toUpperCase() + windMatch[1].slice(1).toLowerCase()
   }
 
-  let cm = (pattern: RegExp): number => {
+  let missingFields: string[] = []
+  let cm = (field: keyof SnowStats, pattern: RegExp): number => {
     let match = text.match(pattern)
-    return match?.[1] !== undefined ? parseInt(match[1], 10) : 0
+    if (match?.[1] === undefined) {
+      missingFields.push(field)
+      return 0
+    }
+    return parseInt(match[1], 10)
   }
 
   let snow: SnowStats = {
-    newSnow: cm(/NEW\s+SNOW[\s\S]{0,100}?(\d+)\s*CM/i),
-    lastHour: cm(/LAST\s+HOUR[\s\S]{0,100}?(\d+)\s*CM/i),
-    twentyFourHour: cm(/24\s+HOURS[\s\S]{0,100}?(\d+)\s*CM/i),
-    fortyEightHour: cm(/48\s+HOURS[\s\S]{0,100}?(\d+)\s*CM/i),
-    sevenDay: cm(/7\s+DAYS[\s\S]{0,100}?(\d+)\s*CM/i),
-    baseDepth: cm(/BASE\s+DEPTH[\s\S]{0,100}?(\d+)\s*CM/i),
-    seasonTotal: cm(/SEASON\s+TOTAL[\s\S]{0,100}?(\d+)\s*CM/i),
+    newSnow: cm('newSnow', /NEW\s+SNOW[\s\S]{0,100}?(\d+)\s*CM/i),
+    lastHour: cm('lastHour', /LAST\s+HOUR[\s\S]{0,100}?(\d+)\s*CM/i),
+    twentyFourHour: cm('twentyFourHour', /24\s+HOURS[\s\S]{0,100}?(\d+)\s*CM/i),
+    fortyEightHour: cm('fortyEightHour', /48\s+HOURS[\s\S]{0,100}?(\d+)\s*CM/i),
+    sevenDay: cm('sevenDay', /7\s+DAYS[\s\S]{0,100}?(\d+)\s*CM/i),
+    baseDepth: cm('baseDepth', /BASE\s+DEPTH[\s\S]{0,100}?(\d+)\s*CM/i),
+    seasonTotal: cm('seasonTotal', /SEASON\s+TOTAL[\s\S]{0,100}?(\d+)\s*CM/i),
   }
 
-  return { weather, snow, forecast: extractForecast(html), forecastIssuedAt: parseIssuedAt(text) }
+  let forecast = extractForecast(html)
+  if (forecast.length === 0) missingFields.push('forecast')
+
+  let coreMissing = missingFields.filter((f) => (CORE_FIELDS as readonly string[]).includes(f))
+  if (coreMissing.length >= 2) throw new SnowReportLayoutError(missingFields)
+  if (missingFields.length > 0) console.error(`Snow report: could not read ${missingFields.join(', ')}`)
+
+  return { weather, snow, forecast, forecastIssuedAt: parseIssuedAt(text), missingFields }
 }
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']

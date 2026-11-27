@@ -44,9 +44,19 @@ export interface ForecastDay extends ParsedForecastDay {
   history: ForecastRevision[]
 }
 
+export type ZoneState = 'open' | 'closed' | 'scheduled' | 'hold' | 'unknown'
+
+export interface ZoneStatus {
+  name: string
+  state: ZoneState
+  /** The resort's own wording, e.g. "Closed" or "Opening Soon". */
+  label: string
+}
+
 export interface ParsedSnowReport {
   weather: Weather
   snow: SnowStats
+  zones: ZoneStatus[]
   forecast: ParsedForecastDay[]
   /** When Environment Canada issued the text forecast on the page, or null if not stated. */
   forecastIssuedAt: string | null
@@ -68,6 +78,7 @@ export class SnowReportLayoutError extends Error {
 export interface SnowReport {
   weather: Weather
   snow: SnowStats
+  zones: ZoneStatus[]
   forecast: ForecastDay[]
   forecastIssuedAt: string | null
   /** When the resort's snow and weather figures last differed from the previous fetch. */
@@ -159,7 +170,42 @@ export function parseSnowReport(html: string): ParsedSnowReport {
   if (coreMissing.length >= 2) throw new SnowReportLayoutError(missingFields)
   if (missingFields.length > 0) console.error(`Snow report: could not read ${missingFields.join(', ')}`)
 
-  return { weather, snow, forecast, forecastIssuedAt: parseIssuedAt(text), missingFields }
+  return { weather, snow, zones: extractZones(html), forecast, forecastIssuedAt: parseIssuedAt(text), missingFields }
+}
+
+function decodeEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function zoneState(cssState: string, label: string): ZoneState {
+  let probe = `${cssState} ${label}`.toLowerCase()
+  if (/open/.test(probe) && !/soon|schedul/.test(probe)) return 'open'
+  if (/closed/.test(probe)) return 'closed'
+  if (/schedul|soon|expected/.test(probe)) return 'scheduled'
+  if (/hold|delay|standby/.test(probe)) return 'hold'
+  return 'unknown'
+}
+
+// The "Zone Status" block on the snow report page: one condition__run per zone,
+// with the state in the lift-status modifier class and the resort's wording below it.
+export function extractZones(html: string): ZoneStatus[] {
+  let block = html.match(/Zone\s+Status[\s\S]*?condition__runs-wrapper[^>]*>([\s\S]*?)<\/section>/i)
+  if (!block?.[1]) return []
+  let zones: ZoneStatus[] = []
+  let pattern = /<h3[^>]*>([\s\S]*?)<\/h3>[\s\S]*?lift-status--([a-z-]+)[\s\S]*?status-text">([\s\S]*?)<\/span>/gi
+  for (let match of block[1].matchAll(pattern)) {
+    let name = decodeEntities(match[1] ?? '')
+    let label = decodeEntities(match[3] ?? '')
+    if (!name) continue
+    zones.push({ name, state: zoneState(match[2] ?? '', label), label: label || (match[2] ?? 'unknown') })
+  }
+  return zones
 }
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
@@ -258,6 +304,7 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
     let report: SnowReport = {
       weather: parsed.weather,
       snow: parsed.snow,
+      zones: parsed.zones,
       forecast,
       forecastIssuedAt: parsed.forecastIssuedAt,
       statsChangedAt,

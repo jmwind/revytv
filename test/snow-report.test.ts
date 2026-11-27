@@ -3,7 +3,7 @@ import * as path from 'node:path'
 import * as assert from 'remix/assert'
 import { describe, it } from 'remix/test'
 
-import { SnowReportLayoutError, createSnowReportService, extractForecast, parseIssuedAt, parseSnowReport } from '../app/server/snow-report.ts'
+import { SnowReportLayoutError, createSnowReportService, extractForecast, extractZones, parseIssuedAt, parseSnowReport } from '../app/server/snow-report.ts'
 import { createMemoryStore } from '../app/server/storage.ts'
 
 const html = fs.readFileSync(path.join(import.meta.dirname, 'fixtures/snow-report.html'), 'utf8')
@@ -127,6 +127,25 @@ describe('changed page layout', () => {
     })
     await assert.rejects(() => svc.getSnowReport(), SnowReportLayoutError)
     assert.deepEqual(Object.keys(store.data), [])
+  })
+})
+
+describe('extractZones', () => {
+  it('reads every zone with its state and the resort wording', () => {
+    let zones = extractZones(html)
+    assert.equal(zones.length, 7)
+    assert.deepEqual(zones[0], { name: 'Kill the Banker', state: 'closed', label: 'Closed' })
+    assert.deepEqual(zones[3], { name: 'Lower North Bowl', state: 'open', label: 'Open' })
+    assert.equal(zones.filter((z) => z.state === 'open').length, 6)
+  })
+
+  it('returns no zones when the block is missing', () => {
+    assert.deepEqual(extractZones('<html></html>'), [])
+  })
+
+  it('treats "Opening Soon" as scheduled, not open', () => {
+    let page = html.replace('lift-status--closed', 'lift-status--scheduled').replace('<span class="status-text">Closed</span>', '<span class="status-text">Opening Soon</span>')
+    assert.equal(extractZones(page)[0]?.state, 'scheduled')
   })
 })
 

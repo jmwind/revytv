@@ -1,6 +1,7 @@
 import { css } from 'remix/component'
 import type { Handle } from 'remix/component'
 
+import type { AvalancheForecast } from '../server/avalanche.ts'
 import type { SeasonContext } from '../server/season-context.ts'
 import type { SnowReport } from '../server/snow-report.ts'
 import { Nav } from '../ui/nav.tsx'
@@ -9,7 +10,9 @@ import { Freshness } from '../ui/public/freshness.tsx'
 import { WEBCAMS, WebcamGrid } from '../ui/public/webcams.tsx'
 import { WindyMap } from '../ui/public/windy-map.tsx'
 import { SeasonPanel } from '../ui/season-panel.tsx'
+import { AvalancheCard } from '../ui/avalanche-card.tsx'
 import { SnowStats } from '../ui/snow-stats.tsx'
+import { ZoneStatus, zoneSummary } from '../ui/zone-status.tsx'
 import type { Loaded } from './controller.tsx'
 import { Document, type Shell } from './document.tsx'
 
@@ -17,6 +20,7 @@ export interface HomePageProps {
   shell: Shell
   report: Loaded<SnowReport>
   season: Loaded<SeasonContext>
+  avalanche: Loaded<AvalancheForecast>
 }
 
 const layout = css({
@@ -73,9 +77,12 @@ function Notice(handle: Handle<{ what: string; error: string | null }>) {
 
 export function HomePage(handle: Handle<HomePageProps>) {
   return () => {
-    let { shell, report, season } = handle.props
+    let { shell, report, season, avalanche } = handle.props
     let r = report.value
     let s = season.value
+    let a = avalanche.value
+    // A report cached before zones were parsed has none; the section simply stays off.
+    let zones = r?.zones ?? []
 
     return (
       <Document
@@ -121,11 +128,27 @@ export function HomePage(handle: Handle<HomePageProps>) {
             />
           ) : null}
 
+          {zones.length ? (
+            <>
+              <div class="section-head">
+                <h2>Zone status</h2>
+                <span class="aside">{zoneSummary(zones)} · from the resort</span>
+              </div>
+              <ZoneStatus zones={zones} />
+            </>
+          ) : null}
+
           <div class="section-head">
             <h2>Cameras</h2>
             <span class="aside">Refresh every 10 minutes · click to enlarge</span>
           </div>
           <WebcamGrid cams={WEBCAMS} />
+
+          <div class="section-head">
+            <h2>Avalanche forecast</h2>
+            <span class="aside">Avalanche Canada · the forecast area around the resort</span>
+          </div>
+          {a ? <AvalancheCard forecast={a} /> : <Notice what="Avalanche forecast" error={avalanche.error} />}
 
           <div class="section-head">
             <h2>Snow accumulation map</h2>
@@ -134,7 +157,7 @@ export function HomePage(handle: Handle<HomePageProps>) {
           <WindyMap />
 
           <footer>
-            <span>Data: Revelstoke Mountain Resort snow report and historical tracker, Open-Meteo, Windy.</span>
+            <span>Data: Revelstoke Mountain Resort snow report and historical tracker, Avalanche Canada, Open-Meteo, Windy.</span>
             {r ? <span>Stored in {r.storageMode === 'upstash-redis' ? 'Upstash Redis' : 'a local JSON file'}.</span> : null}
             <span>
               <a href="/about">About this obsession</a>

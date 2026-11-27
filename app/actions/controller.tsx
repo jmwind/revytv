@@ -3,6 +3,7 @@ import { createController } from 'remix/router'
 
 import { assets } from '../assets.ts'
 import { routes } from '../routes.ts'
+import { getAvalancheForecast, type AvalancheForecast } from '../server/avalanche.ts'
 import { getCalendarData } from '../server/calendar-data.ts'
 import { isSummerSeason } from '../server/season.ts'
 import { loadSeasonContext, type SeasonContext } from '../server/season-context.ts'
@@ -33,7 +34,7 @@ async function attempt<T>(what: string, load: () => Promise<T>): Promise<Loaded<
 
 // The shell, the snow report and the season comparison load together; the season
 // context only waits for the report at the very end, to anchor today on the live total.
-function loadHomeData(): Promise<[Shell, Loaded<SnowReport>, Loaded<SeasonContext>]> {
+function loadHomeData(): Promise<[Shell, Loaded<SnowReport>, Loaded<SeasonContext>, Loaded<AvalancheForecast>]> {
   let now = new Date()
   let report = attempt('snow report', getSnowReport)
   let season = attempt('historical snowfall', () =>
@@ -42,7 +43,8 @@ function loadHomeData(): Promise<[Shell, Loaded<SnowReport>, Loaded<SeasonContex
       report.then((r) => r.value?.snow.seasonTotal ?? null),
     ),
   )
-  return Promise.all([loadShell(), report, season])
+  let avalanche = attempt('avalanche forecast', () => getAvalancheForecast(now))
+  return Promise.all([loadShell(), report, season, avalanche])
 }
 
 export default createController(routes, {
@@ -55,8 +57,8 @@ export default createController(routes, {
       // `/?tv` was the original TV-mode URL.
       if (context.url.searchParams.has('tv')) return redirect(routes.tv.href(), 301)
 
-      let [shell, report, season] = await loadHomeData()
-      return context.render(<HomePage shell={shell} report={report} season={season} />, NO_STORE)
+      let [shell, report, season, avalanche] = await loadHomeData()
+      return context.render(<HomePage shell={shell} report={report} season={season} avalanche={avalanche} />, NO_STORE)
     },
 
     async tv(context) {

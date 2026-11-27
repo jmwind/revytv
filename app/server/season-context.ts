@@ -29,8 +29,10 @@ export interface SeasonContext {
   comparison: SeasonComparison
 }
 
-export async function loadSeasonContext(now: Date, liveTotal: number | null): Promise<SeasonContext> {
-  let data = await getHistoricalSnowData(now)
+export async function loadSeasonContext(
+  now: Date,
+  liveTotalInput: number | null | Promise<number | null>,
+): Promise<SeasonContext> {
   let { month } = resortLocalParts(now)
   let startYear = seasonStartYear(now)
   let rawIndex = dayOfSeasonIndex(now)
@@ -45,9 +47,11 @@ export async function loadSeasonContext(now: Date, liveTotal: number | null): Pr
   }
 
   let label = seasonLabelForStartYear(startYear)
+  // Both storage reads run alongside the snow report fetch; only the anchor needs its result.
+  let [data, own, liveTotal] = await Promise.all([getHistoricalSnowData(now), getCurrentSeasonSeries(startYear), liveTotalInput])
   let resort = data.seasons.find((s) => s.label === label)
   let aligned = resort ? alignResortSeries(resort.values, index, liveTotal) : undefined
-  let current = mergeCurrentSeason(aligned, await getCurrentSeasonSeries(startYear), index)
+  let current = mergeCurrentSeason(aligned, own, index)
 
   // Anchor today on the live season total from the snow report when we have one.
   let anchored: number | null = null

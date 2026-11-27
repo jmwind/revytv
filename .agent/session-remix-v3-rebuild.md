@@ -43,3 +43,11 @@ settings, added the historical-season comparison, and redesigned the UI.
 - The function must ship `node_modules/**` (vercel.json includeFiles). nft only traces static imports; Remix's asset server loads platform binaries by dynamic require, resolves `@oxc-project/runtime` with `import.meta.resolve`, and walks the full dependency closure of `remix` for its access policy. Cherry-picking packages took three failed deploys; the whole folder is ~70 MB and works.
 - `includeFiles` is one glob string capped at 256 characters.
 - Preview URLs sit behind Vercel deployment protection: check them with `vercel curl <url>/<path>` and read crashes with `vercel logs --deployment <host> --json`.
+
+## Load time round (2026-11-27)
+
+- Production home page was ~2.7 s to DOMContentLoaded: the HTML took 0.3–0.9 s (Upstash `KEYS` + one `GET` per key for prefix reads, snow report and historical loads in series), then Windy's two synchronous `<script>` tags at the bottom of the body blocked parsing while ~80 tile and label requests ran.
+- Fixes: `getAllByPrefix` is one `KEYS` + chunked `MGET`; the season context starts its storage reads before the snow report resolves (`loadSeasonContext` accepts a promise for the live total); forecast period tracking runs in parallel; Windy is a `clientEntry` that injects Leaflet and libBoot only when the section is within 300 px of the viewport.
+- The 40-module ESM graph is Remix v3's unbundled design; `modulepreload` already loads it in parallel and the CDN serves it immutable after the first visitor per region. Not worth fighting.
+- Local JSON storage ignored TTLs, so the dev snow report never refreshed ("Report 19 hr ago"). Entries written with a TTL are now wrapped with `__expiresAt`.
+- Canvas cannot read `light-dark()` tokens: the weather scene sets `color`, `border-color` and `caret-color` to the tokens and reads the resolved values from `getComputedStyle`.

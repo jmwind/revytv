@@ -2,11 +2,15 @@ import { css } from 'remix/component'
 import type { Handle } from 'remix/component'
 
 import type { SnowReport } from '../server/snow-report.ts'
+import { WeatherScene } from './public/weather-scene.tsx'
 
 const blockStyle = css({
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.35fr)',
   '& .lead': {
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 'var(--radius-m) 0 0 var(--radius-m)',
     padding: '16px 20px 14px',
     borderRight: '1px solid var(--rule)',
     display: 'flex',
@@ -14,6 +18,8 @@ const blockStyle = css({
     justifyContent: 'space-between',
     gap: '6px',
   },
+  // The weather scene paints behind everything in the lead cell.
+  '& .lead > :not(canvas)': { position: 'relative', zIndex: 1 },
   '& .lead .label': {
     color: 'var(--ink-2)',
     fontSize: '13px',
@@ -77,6 +83,7 @@ const blockStyle = css({
   '@media (max-width: 720px)': {
     gridTemplateColumns: '1fr',
     '& .lead': {
+      borderRadius: 'var(--radius-m) var(--radius-m) 0 0',
       borderRight: 0,
       borderBottom: '1px solid var(--rule)',
       display: 'grid',
@@ -117,6 +124,13 @@ export function SnowStats(handle: Handle<{ report: SnowReport }>) {
     return (
       <section class="panel" aria-labelledby="now-heading" mix={blockStyle}>
         <div class="lead">
+          <WeatherScene
+            condition={weather.condition}
+            newSnow={newSnow}
+            last24={snow.twentyFourHour ?? 0}
+            windSpeed={weather.windSpeed}
+            windDirection={weather.windDirection}
+          />
           <span id="now-heading" class="label">
             New snow overnight
           </span>

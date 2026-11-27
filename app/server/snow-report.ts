@@ -174,10 +174,11 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
     let fetchedAtDate = now()
     let fetchedAt = fetchedAtDate.toISOString()
 
-    let forecast = await trackForecastHistory(parsed.forecast, fetchedAtDate)
-
-    if (parsed.snow.seasonTotal) await storeSeasonTotal(parsed.snow.seasonTotal, fetchedAt)
-    await storeNewSnow(parsed.snow.newSnow, fetchedAt)
+    let [forecast] = await Promise.all([
+      trackForecastHistory(parsed.forecast, fetchedAtDate),
+      parsed.snow.seasonTotal ? storeSeasonTotal(parsed.snow.seasonTotal, fetchedAt) : Promise.resolve(),
+      storeNewSnow(parsed.snow.newSnow, fetchedAt),
+    ])
 
     let report: SnowReport = {
       weather: parsed.weather,
@@ -211,18 +212,16 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
 
   async function trackForecastHistory(forecasts: ParsedForecastDay[], fetchedAtDate: Date): Promise<ForecastDay[]> {
     let fetchedAt = fetchedAtDate.toISOString()
-    let updated: ForecastDay[] = []
     let dateKeys = assignForecastDates(
       forecasts.map((f) => f.day),
       fetchedAtDate,
     )
 
-    for (let [i, forecast] of forecasts.entries()) {
-      let dateInfo = dateKeys[i] ?? null
-      if (!dateInfo) {
-        updated.push({ ...forecast, history: [] })
-        continue
-      }
+    let tracked = await Promise.all(forecasts.map((forecast, i) => trackOne(forecast, dateKeys[i] ?? null)))
+    return tracked
+
+    async function trackOne(forecast: ParsedForecastDay, dateInfo: (typeof dateKeys)[number] | null): Promise<ForecastDay> {
+      if (!dateInfo) return { ...forecast, history: [] }
 
       let storageKey = `forecast:${dateInfo.key}`
       let record = await storage.getWithMock<ForecastRecord>(storageKey, forecast.amount, dateInfo.key)
@@ -241,10 +240,8 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
       }
 
       let history = await getMergedHistoryForDate(dateInfo.date, dateInfo.key)
-      updated.push({ ...forecast, actualDate: dateInfo.date, history })
+      return { ...forecast, actualDate: dateInfo.date, history }
     }
-
-    return updated
   }
 
   // Plain weekday history plus this period's key, never day mixed with night.
@@ -253,8 +250,7 @@ export function createSnowReportService(deps: SnowReportDeps = {}) {
     if (currentKey !== dateStr) keys.push(`forecast:${currentKey}`)
 
     let all: ForecastRevision[] = []
-    for (let key of keys) {
-      let record = await storage.get<ForecastRecord>(key)
+    for (let record of await Promise.all(keys.map((key) => storage.get<ForecastRecord>(key)))) {
       if (record?.history?.length) all.push(...record.history)
     }
     all.sort((a, b) => new Date(a.firstSeen).getTime() - new Date(b.firstSeen).getTime())

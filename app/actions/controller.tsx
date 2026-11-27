@@ -10,7 +10,7 @@ import { getSnowReport, type SnowReport } from '../server/snow-report.ts'
 import { getSummerForecast, type SummerForecast } from '../server/summer-forecast.ts'
 import { AboutPage } from './about-page.tsx'
 import { CalendarPage } from './calendar-page.tsx'
-import { loadShell } from './document.tsx'
+import { loadShell, type Shell } from './document.tsx'
 import { HistoryPage } from './history-page.tsx'
 import { HomePage } from './home-page.tsx'
 import { TvPage } from './tv-page.tsx'
@@ -31,6 +31,20 @@ async function attempt<T>(what: string, load: () => Promise<T>): Promise<Loaded<
   }
 }
 
+// The shell, the snow report and the season comparison load together; the season
+// context only waits for the report at the very end, to anchor today on the live total.
+function loadHomeData(): Promise<[Shell, Loaded<SnowReport>, Loaded<SeasonContext>]> {
+  let now = new Date()
+  let report = attempt('snow report', getSnowReport)
+  let season = attempt('historical snowfall', () =>
+    loadSeasonContext(
+      now,
+      report.then((r) => r.value?.snow.seasonTotal ?? null),
+    ),
+  )
+  return Promise.all([loadShell(), report, season])
+}
+
 export default createController(routes, {
   actions: {
     async assets(context) {
@@ -41,11 +55,7 @@ export default createController(routes, {
       // `/?tv` was the original TV-mode URL.
       if (context.url.searchParams.has('tv')) return redirect(routes.tv.href(), 301)
 
-      let now = new Date()
-      let [shell, report] = await Promise.all([loadShell(), attempt('snow report', getSnowReport)])
-      let season = await attempt('historical snowfall', () =>
-        loadSeasonContext(now, report.value?.snow.seasonTotal ?? null),
-      )
+      let [shell, report, season] = await loadHomeData()
       return context.render(<HomePage shell={shell} report={report} season={season} />, NO_STORE)
     },
 
@@ -61,11 +71,7 @@ export default createController(routes, {
     },
 
     async history(context) {
-      let now = new Date()
-      let [shell, report] = await Promise.all([loadShell(), attempt('snow report', getSnowReport)])
-      let season: Loaded<SeasonContext> = await attempt('historical snowfall', () =>
-        loadSeasonContext(now, report.value?.snow.seasonTotal ?? null),
-      )
+      let [shell, , season] = await loadHomeData()
       return context.render(<HistoryPage shell={shell} season={season} />, NO_STORE)
     },
 

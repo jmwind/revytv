@@ -97,9 +97,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+// The JSON file has no expiry of its own, so entries written with a TTL carry one.
+interface LocalExpiring {
+  __expiresAt: number
+  value: unknown
+}
+
+function isLocalExpiring(value: unknown): value is LocalExpiring {
+  return isRecord(value) && typeof value.__expiresAt === 'number' && 'value' in value
+}
+
+function unwrapLocal<T>(value: unknown): T | null {
+  if (value === undefined) return null
+  if (isLocalExpiring(value)) return value.__expiresAt > Date.now() ? (value.value as T) : null
+  return value as T
+}
+
 function localGet<T>(key: string): T | null {
-  let value = readLocal()[key]
-  return value === undefined ? null : (value as T)
+  return unwrapLocal<T>(readLocal()[key])
 }
 
 function localGetWithMock<T>(key: string, currentAmount?: number, date?: string): T | null {
@@ -149,7 +164,7 @@ export async function set(key: string, value: unknown, ttlSeconds: number | null
     return
   }
   let data = readLocal()
-  data[key] = value
+  data[key] = ttlSeconds ? ({ __expiresAt: Date.now() + ttlSeconds * 1000, value } satisfies LocalExpiring) : value
   writeLocal(data)
 }
 
@@ -163,19 +178,30 @@ export async function del(key: string): Promise<void> {
   writeLocal(data)
 }
 
+const MGET_CHUNK = 100
+
+// One KEYS plus one MGET per hundred keys, instead of a round trip per key.
 export async function getAllByPrefix<T>(prefix: string): Promise<Record<string, T>> {
   let results: Record<string, T> = {}
   if (useUpstash()) {
     let client = getRedis()
     let keys = await client.keys(`${prefix}*`)
-    for (let key of keys) {
-      let value = await client.get<T>(key)
-      if (value !== null && value !== undefined) results[key] = value
-    }
+    let chunks: string[][] = []
+    for (let i = 0; i < keys.length; i += MGET_CHUNK) chunks.push(keys.slice(i, i + MGET_CHUNK))
+    let valueChunks = await Promise.all(chunks.map((chunk) => client.mget<Array<T | null>>(...chunk)))
+    chunks.forEach((chunk, c) => {
+      chunk.forEach((key, i) => {
+        let value = valueChunks[c]?.[i]
+        if (value !== null && value !== undefined) results[key] = value
+      })
+    })
     return results
   }
   for (let [key, value] of Object.entries(readLocal())) {
-    if (key.startsWith(prefix)) results[key] = value as T
+    if (key.startsWith(prefix)) {
+      let unwrapped = unwrapLocal<T>(value)
+      if (unwrapped !== null) results[key] = unwrapped
+    }
   }
   return results
 }

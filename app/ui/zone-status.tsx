@@ -210,7 +210,7 @@ export function ZoneStatus(handle: Handle<{ zones: Zone[] }>) {
             <b>2340</b>Subpeak
           </div>
           <div>
-            <b>1680</b>Ripper
+            <b>1960</b>Ripper
           </div>
         </div>
         {placed.map((zone) => (

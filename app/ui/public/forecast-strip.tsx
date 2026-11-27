@@ -22,14 +22,17 @@ export interface ForecastDayLite {
   history: Revision[]
 }
 
-// The resort's lift-served elevations, in metres. The forecast's freezing level is read against them.
+// Where the lifts top out, in metres, from the resort's own figures. The forecast's
+// freezing level is read against them. Subpeak is the hike above the Stoke.
+const SUBPEAK = { label: 'Subpeak', m: 2340 }
 const ELEVATIONS = [
-  { label: 'Summit', m: 2225 },
-  { label: 'Ripper', m: 1950 },
-  { label: 'Top Gon', m: 1713 },
+  { label: 'Stoke', m: 2225 },
+  { label: 'Ripper', m: 1960 },
+  { label: 'Top Gon', m: 1694 },
   { label: 'Mid Gon', m: 800 },
   { label: 'Village', m: 512 },
 ]
+const LEGEND = [SUBPEAK, ...ELEVATIONS.filter((e) => e.label !== 'Village')]
 const Y_MAX = 2350
 const Y_MIN = 400
 const PLOT_H = 150
@@ -141,6 +144,19 @@ const stripStyle = css({
     color: 'var(--ink-2)',
     fontSize: '12px',
   },
+  '& .elevations': {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    gap: '4px 14px',
+    padding: '8px 12px 10px',
+    borderTop: '1px solid var(--rule-2)',
+    color: 'var(--ink-2)',
+    fontSize: '12px',
+  },
+  '& .elevations .key': { color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '11px', marginRight: '2px' },
+  '& .elevations b': { color: 'var(--ink)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
+  '& .elevations small': { fontSize: '11px', color: 'var(--ink-3)', marginLeft: '1px' },
   '& .caption i': {
     display: 'inline-block',
     width: '10px',
@@ -390,8 +406,8 @@ export const ForecastStrip = clientEntry(
                     x2="1000"
                     y1={elevationY(e.m)}
                     y2={elevationY(e.m)}
-                    stroke={e.label === 'Summit' || e.label === 'Village' ? 'var(--rule)' : 'var(--ink-3)'}
-                    stroke-dasharray={e.label === 'Summit' || e.label === 'Village' ? undefined : '2 4'}
+                    stroke={e.label === 'Stoke' || e.label === 'Village' ? 'var(--rule)' : 'var(--ink-3)'}
+                    stroke-dasharray={e.label === 'Stoke' || e.label === 'Village' ? undefined : '2 4'}
                     stroke-width="1"
                     vector-effect="non-scaling-stroke"
                   />
@@ -417,6 +433,15 @@ export const ForecastStrip = clientEntry(
             <span class="profile-note">
               <i></i>Snowing above the freezing level
             </span>
+          </div>
+          <div class="elevations">
+            <span class="key">Elevations</span>
+            {LEGEND.map((e) => (
+              <span key={e.label}>
+                <b>{e.m}</b>
+                <small>m</small> {e.label}
+              </span>
+            ))}
           </div>
           <dialog
             mix={[
